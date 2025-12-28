@@ -1,0 +1,69 @@
+workflows:
+  android_release:
+    name: Android Release (Expo)
+    max_build_duration: 60
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+    environment:
+      node: 20
+      java: 17
+      vars:
+        APP_DIR: .
+    cache:
+      cache_paths:
+        - ~/.npm
+        - ~/.gradle/caches
+        - ~/.gradle/wrapper
+        - $APP_DIR/node_modules
+        - $APP_DIR/android/.gradle
+    scripts:
+      - name: Show versions
+        script: |
+          echo "Node $(node -v)"
+          echo "NPM  $(npm -v)"
+          java -version || true
+      - name: Install dependencies
+        script: |
+          cd "$APP_DIR"
+          npm ci
+      - name: Prebuild native Android project (Expo)
+        script: |
+          cd "$APP_DIR"
+          npx expo prebuild -p android --non-interactive
+      - name: Configure Android keystore
+        script: |
+          cd "$APP_DIR/android"
+          if [ -n "$CM_KEYSTORE" ]; then
+            echo "Writing release keystore"
+            echo "$CM_KEYSTORE" | base64 --decode > release-keystore.jks
+          printf "%s\n" \
+            "MYAPP_UPLOAD_STORE_FILE=release-keystore.jks" \
+            "MYAPP_UPLOAD_KEY_ALIAS=$CM_KEY_ALIAS" \
+            "MYAPP_UPLOAD_STORE_PASSWORD=$CM_KEYSTORE_PASSWORD" \
+            "MYAPP_UPLOAD_KEY_PASSWORD=$CM_KEY_PASSWORD" >> gradle.properties
+          else
+            echo "WARNING: CM_KEYSTORE not set. Build will be unsigned."
+          fi
+      - name: Build Android App Bundle (AAB)
+        script: |
+          cd "$APP_DIR/android"
+          ./gradlew clean bundleRelease --no-daemon
+      - name: Build Android APK (optional)
+        script: |
+          cd "$APP_DIR/android"
+          ./gradlew assembleRelease --no-daemon
+    artifacts:
+      - "$APP_DIR/android/app/build/outputs/**/*.aab"
+      - "$APP_DIR/android/app/build/outputs/**/*.apk"
+    publishing:
+      email:
+        recipients:
+          - dev-support@90skalyanam.com
+        notify:
+          success: true
+
