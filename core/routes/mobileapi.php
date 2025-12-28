@@ -102,6 +102,12 @@ Route::namespace('MobileApi')->name('mobile_api.')->group(function () {
 
         Route::middleware(['check.status'])->group(function () {
             Route::post('user-data-submit', 'UserControllerApi@userDataSubmit')->name('data.submit');
+            
+            // Profile routes available even if profile is NOT complete
+            Route::controller('UserControllerApi')->group(function () {
+                Route::get('user/details', 'getProfileDetails')->name('user.details');
+                Route::post('user/update', 'updateProfileDetails')->name('user.update');
+            });
 
             Route::middleware('registration.complete')->group(function () {
                 Route::get('dashboard', function () {
