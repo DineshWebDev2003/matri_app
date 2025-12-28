@@ -1,0 +1,6 @@
+[25-Jun-2025 09:52:35 UTC] PHP Deprecated:  Using ${var} in strings is deprecated, use {$var} instead in /home/skalyana/public_html/Files/install/index.php on line 165
+[25-Jun-2025 09:52:35 UTC] PHP Deprecated:  Using ${var} in strings is deprecated, use {$var} instead in /home/skalyana/public_html/Files/install/index.php on line 184
+[25-Jun-2025 09:52:35 UTC] PHP Deprecated:  Using ${var} in strings is deprecated, use {$var} instead in /home/skalyana/public_html/Files/install/index.php on line 196
+[25-Jun-2025 10:02:03 UTC] PHP Deprecated:  Using ${var} in strings is deprecated, use {$var} instead in /home/skalyana/public_html/Files/install/index.php on line 165
+[25-Jun-2025 10:02:03 UTC] PHP Deprecated:  Using ${var} in strings is deprecated, use {$var} instead in /home/skalyana/public_html/Files/install/index.php on line 184
+[25-Jun-2025 10:02:03 UTC] PHP Deprecated:  Using ${var} in strings is deprecated, use {$var} instead in /home/skalyana/public_html/Files/install/index.php on line 196

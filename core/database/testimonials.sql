@@ -1,0 +1,4 @@
+INSERT INTO `frontends` (`data_keys`, `data_values`, `created_at`, `updated_at`) VALUES
+('testimonial.element', '{"has_image":["1"],"name":"John Doe","designation":"Software Engineer","speech":"This is a great platform to find your life partner. I found my soulmate here.","star":"5","profile_picture":"629eea35a0ebd1654581813.jpg"}', NOW(), NOW()),
+('testimonial.element', '{"has_image":["1"],"name":"Jane Smith","designation":"Doctor","speech":"Very professional service and great support from the team.","star":"5","profile_picture":"629eea45948561654581829.jpg"}', NOW(), NOW()),
+('testimonial.element', '{"has_image":["1"],"name":"Mike Johnson","designation":"Business Analyst","speech":"Found my perfect match within a month. Highly recommended!","star":"5","profile_picture":"629eea57d1e2d1654581847.png"}', NOW(), NOW()); 

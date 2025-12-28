@@ -1,0 +1,52 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+// Admin Authentication Routes
+Route::namespace('Auth')->group(function () {
+    Route::controller('LoginController')->group(function () {
+        Route::get('/', 'showLoginForm')->name('login');
+        Route::post('/', 'login');
+        Route::get('logout', 'logout')->name('logout');
+    });
+});
+
+Route::middleware('admin')->group(function () {
+    // Dashboard
+    Route::controller('AdminController')->group(function () {
+        Route::get('dashboard', 'dashboard')->name('dashboard');
+    });
+
+    // Users Management
+    Route::controller('ManageUsersController')
+        ->prefix('users')
+        ->name('users.')
+        ->group(function () {
+            Route::get('/', 'allUsers')->name('all');
+            Route::get('active', 'activeUsers')->name('active');
+            Route::get('banned', 'bannedUsers')->name('banned');
+            Route::get('email-verified', 'emailVerifiedUsers')->name('email.verified');
+            Route::get('email-unverified', 'emailUnverifiedUsers')->name('email.unverified');
+            Route::get('mobile-unverified', 'mobileUnverifiedUsers')->name('mobile.unverified');
+            Route::get('mobile-verified', 'mobileVerifiedUsers')->name('mobile.verified');
+            Route::get('kyc-unverified', 'kycUnverifiedUsers')->name('kyc.unverified');
+            Route::get('kyc-pending', 'kycPendingUsers')->name('kyc.pending');
+            
+            // User Detail Routes
+            Route::get('detail/{id}', 'detail')->name('detail');
+            Route::post('update/{id}', 'update')->name('update');
+            Route::post('status/{id}', 'status')->name('status');
+            
+            // User Gallery Management
+            Route::prefix('gallery')
+                ->name('gallery.')
+                ->controller('GalleryController')
+                ->group(function () {
+                    Route::get('{id}', 'index')->name('index');
+                    Route::post('update-status', 'updateStatus')->name('update.status');
+                    Route::delete('{id}', 'delete')->name('delete');
+                });
+        });
+
+    // Add other admin routes here...
+});

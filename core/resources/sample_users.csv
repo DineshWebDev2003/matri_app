@@ -1,0 +1,4 @@
+firstname,lastname,email,mobile,password,gender,marital_status,mother_tongue,birth_date,religion_id,caste,country,state,city,height,weight,body_type,complexion,blood_group,physical_status,father_name,mother_name,family_type,family_status,family_values,siblings,package_id,address,pincode,assigned_staff,assigned_franchise,looking_for
+John,Doe,john.doe@example.com,9876543210,password,Male,Unmarried,Tamil,1995-05-10,1,Brahmin,India,Tamil Nadu,Chennai,170,65,Slim,Fair,O+,Normal,Raj,Doe,Nuclear,Middle,Traditional,1,4,"123 Main St",600001,,
+Jane,Smith,jane.smith@example.com,9876543211,password,Female,Unmarried,English,1997-08-15,2,Kamma,India,Telangana,Hyderabad,160,55,Average,Wheatish,B+,Normal,Robert,Smith,Joint,Upper,Modern,2,4,"45 Park Ave",500001,,2
+
