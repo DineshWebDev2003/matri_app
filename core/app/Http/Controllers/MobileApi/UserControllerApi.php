@@ -4,7 +4,7 @@ namespace App\Http\Controllers\MobileApi;
 
 use App\Http\Controllers\Api\UserController as BaseUserController;
 
-class UserController extends BaseUserController
+class UserControllerApi extends BaseUserController
 {
     /**
      * Override: include basic user info fields for mobile app

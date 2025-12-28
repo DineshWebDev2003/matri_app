@@ -144,7 +144,7 @@
                                         <div class="col-md-6">
                                             <div><b>Gender:</b> {{ $member->basicInfo->gender ?? 'N/A' }}</div>
                                             <div><b>Mobile:</b> {{ $member->mobile }}</div>
-                                            <div><b>Religion:</b> {{ optional($member->basicInfo->religion)->name ?? 'N/A' }}</div>
+                                            <div><b>Religion:</b> {{ optional($member->basicInfo->religionInfo)->name ?? 'N/A' }}</div>
                                             <div><b>Caste:</b> {{ $member->basicInfo->caste ?? 'N/A' }}</div>
                                             <div><b>Mother Tongue:</b> {{ $member->basicInfo->mother_tongue ?? 'N/A' }}</div>
                                             <div><b>Marital Status:</b> {{ $member->basicInfo->marital_status ?? 'N/A' }}</div>

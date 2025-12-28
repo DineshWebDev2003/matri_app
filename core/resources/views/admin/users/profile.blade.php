@@ -16,6 +16,8 @@
                     <div>
                         @if($user->status == Status::USER_ACTIVE)
                             <span class="badge rounded-pill bg-success px-4 py-2" style="font-size:1.1rem; letter-spacing:1px;">APPROVED</span>
+                        @elseif($user->status == Status::USER_UNAPPROVED)
+                            <span class="badge rounded-pill bg-warning text-dark px-4 py-2" style="font-size:1.1rem; letter-spacing:1px;"><i class="las la-thumbs-down"></i> UNAPPROVED</span>
                         @elseif($user->status == Status::USER_BAN && (!isset($user->limitation) || $user->limitation->package_id != 4))
                             <span class="badge rounded-pill bg-danger px-4 py-2" style="font-size:1.1rem; letter-spacing:1px;">SUSPENDED</span>
                         @elseif($user->limitation && $user->limitation->package_id == 4)
@@ -34,7 +36,7 @@
                         <div><span style="font-weight:600;">Marital Status</span>: <span style="font-weight:400;">{{ $user->basicInfo->marital_status ?? 'N/A' }}</span></div>
                         <div><span style="font-weight:600;">Mother Tongue</span>: <span style="font-weight:400;">{{ $user->basicInfo->mother_tongue ?? 'N/A' }}</span></div>
                         <div><span style="font-weight:600;">Mobile</span>: <span style="font-weight:400;">{{ $user->mobile }}</span></div>
-                        <div><span style="font-weight:600;">Religion Name</span>: <span style="font-weight:400;">{{ optional($user->basicInfo->religion)->name ?? 'N/A' }}</span></div>
+                        <div><span style="font-weight:600;">Religion</span>: <span style="font-weight:400;">{{ optional(optional($user->basicInfo)->religionInfo)->name ?? '-' }}</span></div>
                         <div><span style="font-weight:600;">Caste Name</span>: <span style="font-weight:400;">{{ $user->basicInfo->caste ?? 'N/A' }}</span></div>
                         <div><span style="font-weight:600;">Assign To Staff</span>: <span style="font-weight:400;">{{ optional($user->staff)->name ?? 'N/A' }}</span></div>
                     </div>
@@ -60,7 +62,7 @@
     <div class="card mb-4" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
         <div class="card-header" style="background: #f4f7fe; color: #232946; font-weight:600; font-size:1.1rem; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom: 1px solid #e0e0e0;">Religious Information</div>
         <div class="card-body row" style="font-size:1.08rem; color:#333; line-height:2.1;">
-            <div class="col-md-6 mb-1"><span style="font-weight:600;">Religion</span>: <span style="font-weight:400;">{{ optional($user->basicInfo->religion)->name ?? 'N/A' }}</span></div>
+            <div class="col-md-6 mb-1"><span style="font-weight:600;">Religion</span>: <span style="font-weight:400;">{{ optional($user->basicInfo->religionInfo)->name ?? 'N/A' }}</span></div>
             <div class="col-md-6 mb-1"><span style="font-weight:600;">Caste</span>: <span style="font-weight:400;">{{ $user->basicInfo->caste ?? 'N/A' }}</span></div>
             <div class="col-md-6 mb-1"><span style="font-weight:600;">Sub Caste</span>: <span style="font-weight:400;">{{ $user->basicInfo->sub_caste ?? 'N/A' }}</span></div>
             <div class="col-md-6 mb-1"><span style="font-weight:600;">Gothram</span>: <span style="font-weight:400;">{{ $user->basicInfo->gothram ?? 'N/A' }}</span></div>

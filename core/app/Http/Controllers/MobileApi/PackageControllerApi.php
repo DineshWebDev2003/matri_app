@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class PackageController extends Controller
+class PackageControllerApi extends Controller
 {
     /**
      * Current logged-in user package info
@@ -28,7 +28,7 @@ class PackageController extends Controller
             return response()->json([
                 'status' => 'success',
                 'data'   => ['package' => $package],
-            ]);}
+            ]);
         } catch (\Exception $e) {
             Log::error('Package info error: ' . $e->getMessage());
             return response()->json([

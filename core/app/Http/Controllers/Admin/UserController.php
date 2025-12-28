@@ -54,7 +54,7 @@ class UserController extends Controller
     public function expired(Request $request)
     {
         $pageTitle = 'Plan Expired Members';
-        $users = User::with(['limitation.package','basicInfo', 'basicInfo.religion'])
+        $users = User::with(['limitation.package','basicInfo', 'basicInfo.religionInfo'])
             ->whereHas('limitation', function($q){
                 $q->whereNotNull('expire_date')
                   ->where('expire_date', '<', now());
@@ -67,7 +67,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $pageTitle = 'Manage Member - ALL';
-        $query = User::with(['limitation.package', 'basicInfo', 'basicInfo.religion', 'staff']);
+        $query = User::with(['limitation.package', 'basicInfo', 'basicInfo.religionInfo', 'staff']);
         
         // Search functionality
         if ($request->search) {
@@ -395,7 +395,7 @@ class UserController extends Controller
     {
         $user = User::with([
             'limitation.package',
-            'basicInfo', 'basicInfo.religion',
+            'basicInfo', 'basicInfo.religionInfo',
             'physicalAttributes',
             'family',
             'educationInfo',
@@ -767,7 +767,7 @@ if ($request->filled('status') && is_numeric($request->input('status'))) {
     {
         $user = User::with([
             'limitation.package',
-            'basicInfo', 'basicInfo.religion',
+            'basicInfo', 'basicInfo.religionInfo',
             'physicalAttributes',
             'family',
             'educationInfo',
@@ -782,7 +782,7 @@ if ($request->filled('status') && is_numeric($request->input('status'))) {
     
     public function advancedSearch(Request $request)
     {
-        $query = User::with(['limitation.package', 'basicInfo', 'basicInfo.religion', 'staff']);
+        $query = User::with(['limitation.package', 'basicInfo', 'basicInfo.religionInfo', 'staff']);
         
         // Add advanced filters here (gender, age, etc.)
         if ($request->gender) {

@@ -29,8 +29,10 @@ Route::namespace('MobileApi')->name('mobile_api.')->group(function () {
         ]);
     });
 
+
+
     // Auth routes
-    Route::namespace('Auth')->group(function () {
+    Route::namespace('Auth')->prefix('auth')->group(function () {
         Route::post('login', 'LoginController@login');
         Route::post('register', 'RegisterController@register');
 
@@ -90,7 +92,7 @@ Route::namespace('MobileApi')->name('mobile_api.')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
 
         // Authorization
-        Route::controller('AuthorizationController')->group(function () {
+        Route::controller('AuthorizationControllerApi')->group(function () {
             Route::get('authorization', 'authorization')->name('authorization');
             Route::get('resend-verify/{type}', 'sendVerifyCode')->name('send.verify.code');
             Route::post('verify-email', 'emailVerification')->name('verify.email');
@@ -99,7 +101,7 @@ Route::namespace('MobileApi')->name('mobile_api.')->group(function () {
         });
 
         Route::middleware(['check.status'])->group(function () {
-            Route::post('user-data-submit', 'UserController@userDataSubmit')->name('data.submit');
+            Route::post('user-data-submit', 'UserControllerApi@userDataSubmit')->name('data.submit');
 
             Route::middleware('registration.complete')->group(function () {
                 Route::get('dashboard', function () {
@@ -162,26 +164,26 @@ Route::namespace('MobileApi')->name('mobile_api.')->group(function () {
                     ]);
                 });
 
-                Route::controller('UserController')->group(function () {
+                Route::controller('UserControllerApi')->group(function () {
                     Route::get('kyc-form', 'kycForm')->name('kyc.form');
                     Route::post('kyc-submit', 'kycSubmit')->name('kyc.submit');
                     Route::any('deposit/history', 'depositHistory')->name('deposit.history');
                 });
 
                 // Profile setting
-                Route::controller('UserController')->group(function () {
+                Route::controller('UserControllerApi')->group(function () {
                     Route::post('profile-setting', 'submitProfile');
                     Route::post('change-password', 'submitPassword');
                 });
 
                 // Member/Profile endpoints for mobile app
-                Route::controller('UserController')->group(function () {
+                Route::controller('UserControllerApi')->group(function () {
                     Route::get('members', 'getMembers')->name('members.list');
                     Route::get('members/{id}', 'getMember')->whereNumber('id')->name('members.show');
-                    Route::get('members/search', [\App\Http\Controllers\MobileApi\SearchController::class,'search'])->name('members.search');
+                    Route::get('members/search', [\App\Http\Controllers\MobileApi\SearchControllerApi::class,'search'])->name('members.search');
                     Route::post('view-contact/{id}', 'viewContact')->name('members.view-contact');
                     // Alias used by mobile app to unlock contact
-                    Route::post('contact/unlock', 'ContactController@unlock')->name('alias.contact.unlock');
+                    Route::post('contact/unlock', 'ContactControllerApi@unlock')->name('alias.contact.unlock');
                     Route::post('express-interest/{id}', 'expressInterest')->name('members.express-interest');
                     Route::delete('remove-interest/{id}', 'removeInterest')->name('members.remove-interest');
                     Route::get('interested-profiles', 'getInterestedProfiles')->name('members.interested');
@@ -190,7 +192,7 @@ Route::namespace('MobileApi')->name('mobile_api.')->group(function () {
                 });
 
                 // Interest Controller overrides
-                Route::controller('InterestController')->group(function () {
+                Route::controller('InterestControllerApi')->group(function () {
                     Route::post('express-interest', 'expressInterest')->name('interest.express');
                     Route::delete('express-interest/{userId}', 'removeInterest')->name('interest.remove');
                     Route::get('my-interests', 'getInterestedProfiles')->name('interest.profiles');
@@ -200,17 +202,17 @@ Route::namespace('MobileApi')->name('mobile_api.')->group(function () {
                 });
 
                 // Alias routes
-                Route::get('new-members', 'NewMemberController@index')->name('alias.new.members');
-                Route::get('new-members/{id}', 'NewMemberController@show')->whereNumber('id')->name('alias.new.members.show');
-                Route::get('hearted-profiles', 'InterestController@getInterestedProfiles')->name('alias.hearted.profiles');
-                Route::get('heart-requests', 'InterestController@getInterestRequests')->name('alias.heart.requests');
-                Route::get('ignored-hearts', 'IgnoredProfileController@getIgnoredProfiles')->name('alias.ignored.hearts');
-                Route::get('package-info', 'PackageController@packageInfo')->name('alias.package.info');
-                Route::get('all-plans', 'PlanController@allPlans')->name('alias.all.plans');
+                Route::get('new-members', 'NewMemberControllerApi@index')->name('alias.new.members');
+                Route::get('new-members/{id}', 'NewMemberControllerApi@show')->whereNumber('id')->name('alias.new.members.show');
+                Route::get('hearted-profiles', 'InterestControllerApi@getInterestedProfiles')->name('alias.hearted.profiles');
+                Route::get('heart-requests', 'InterestControllerApi@getInterestRequests')->name('alias.heart.requests');
+                Route::get('ignored-hearts', 'IgnoredProfileControllerApi@getIgnoredProfiles')->name('alias.ignored.hearts');
+                Route::get('package-info', 'PackageControllerApi@packageInfo')->name('alias.package.info');
+                Route::get('all-plans', 'PlanControllerApi@allPlans')->name('alias.all.plans');
                 Route::get('partner-options', 'PartnerOptionsController@options')->name('alias.partner.options');
 
                 // User Plan/Package endpoints
-                Route::controller('UserController')->group(function () {
+                Route::controller('UserControllerApi')->group(function () {
                     Route::get('user-plan', 'getUserPlan')->name('user.plan');
                     Route::get('user-info', 'getUserInfo')->name('user.info');
                     Route::post('upload-profile-image', 'uploadProfileImage')->name('user.upload.profile');
@@ -220,7 +222,7 @@ Route::namespace('MobileApi')->name('mobile_api.')->group(function () {
                 });
 
                 // Messaging API endpoints
-                Route::controller('MessageController')->group(function () {
+                Route::controller('MessageControllerApi')->group(function () {
                     Route::get('conversations', 'getConversations')->name('api.conversations');
                     Route::get('conversations/{conversationId}/messages', 'getMessages')->name('api.messages');
                     Route::post('conversations/{conversationId}/messages', 'sendMessage')->name('api.send.message');
@@ -231,7 +233,7 @@ Route::namespace('MobileApi')->name('mobile_api.')->group(function () {
                 });
 
                 // Payment
-                Route::controller('PaymentController')->group(function () {
+                Route::controller('PaymentControllerApi')->group(function () {
                     // Mobile Razorpay
                     Route::post('razorpay/order', 'createOrder');
                     Route::post('razorpay/verify', 'verifyPayment');

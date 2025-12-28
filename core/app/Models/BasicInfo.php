@@ -7,7 +7,7 @@ class BasicInfo extends Model
 {
     protected $guarded = [];
 
-    public function religion()
+    public function religionInfo()
     {
         return $this->belongsTo(\App\Models\ReligionInfo::class, 'religion_id');
     }

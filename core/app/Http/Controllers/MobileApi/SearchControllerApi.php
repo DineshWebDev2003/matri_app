@@ -9,7 +9,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
-class SearchController extends Controller
+class SearchControllerApi extends Controller
 {
     /**
      * Basic profile search for the mobile app. Supports location & generic text search

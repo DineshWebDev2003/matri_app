@@ -5,7 +5,7 @@ namespace App\Http\Controllers\MobileApi;
 use App\Http\Controllers\Api\InterestController as BaseInterestController;
 use App\Models\ShortListedProfile;
 
-class InterestController extends BaseInterestController
+class InterestControllerApi extends BaseInterestController
 {
     /**
      * List profiles the authenticated user has shortlisted

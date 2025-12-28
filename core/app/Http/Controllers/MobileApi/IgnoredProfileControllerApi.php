@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\IgnoredProfile;
 use Illuminate\Support\Facades\Log;
 
-class IgnoredProfileController extends Controller
+class IgnoredProfileControllerApi extends Controller
 {
     /**
      * Return list of profiles the authenticated user has ignored (hidden).

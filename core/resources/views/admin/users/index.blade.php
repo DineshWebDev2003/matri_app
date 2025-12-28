@@ -147,12 +147,12 @@
                                         <div>
                                             @if($user->status == Status::USER_BAN)
                                                  <span class="badge rounded-pill bg-danger px-4 py-2" style="font-size:1.1rem; letter-spacing:1px;">SUSPENDED</span>
+                                             @elseif($user->status == Status::USER_UNAPPROVED)
+                                                 <span class="badge rounded-pill bg-warning text-dark px-4 py-2" style="font-size:1.1rem; letter-spacing:1px;"><i class="las la-thumbs-down"></i> UNAPPROVED</span>
                                              @elseif($user->limitation && in_array($user->limitation->package_id, [1,2,3]))
                                                  <span class="badge rounded-pill bg-primary px-4 py-2" style="font-size:1.1rem; letter-spacing:1px;">PAID</span>
                                              @elseif($user->status == Status::USER_ACTIVE && $user->limitation && $user->limitation->package_id == 4)
                                                  <span class="badge rounded-pill bg-success px-4 py-2" style="font-size:1.1rem; letter-spacing:1px;">APPROVED</span>
-                                             @elseif($user->limitation && $user->limitation->package_id == 4)
-                                                 <span class="badge rounded-pill bg-warning text-dark px-4 py-2" style="font-size:1.1rem; letter-spacing:1px;"><i class="las la-thumbs-down"></i> UNAPPROVED</span>
                                              @endif
                                         </div>
                                     </div>
@@ -160,7 +160,7 @@
                                         <div class="col-md-6 mb-1">
                                             <div><span style="font-weight:600;">Gender</span>: <span style="font-weight:400;">{{ optional($user->basicInfo)->gender ?? 'N/A' }}</span></div>
                                             <div><span style="font-weight:600;">Mobile</span>: <span style="font-weight:400;">{{ $user->mobile }}</span></div>
-                                            <div><span style="font-weight:600;">Religion</span>: <span style="font-weight:400;">{{ optional(optional($user->basicInfo)->religion)->name ?? (is_string(optional($user->basicInfo)->religion) ? optional($user->basicInfo)->religion : '-') }}</span></div>
+                                            <div><span style="font-weight:600;">Religion</span>: <span style="font-weight:400;">{{ optional(optional($user->basicInfo)->religionInfo)->name ?? '-' }}</span></div>
                                             <div><span style="font-weight:600;">Caste Name</span>: <span style="font-weight:400;">{{ optional($user->basicInfo)->caste ?? 'N/A' }}</span></div>
                                             <div><span style="font-weight:600;">Mother Tongue</span>: <span style="font-weight:400;">{{ optional($user->basicInfo)->mother_tongue ?? 'N/A' }}</span></div>
                                             <div><span style="font-weight:600;">Marital Status</span>: <span style="font-weight:400;">{{ optional($user->basicInfo)->marital_status ?? 'N/A' }}</span></div>

@@ -11,11 +11,11 @@
                         <span class="fw-bold" style="font-size: 1.2rem;">{{ $user->firstname }} {{ $user->lastname }} (NKLYNM{{ $user->id }})</span>
                     </div>
                     <div>
-                        @if($user->status == 'approved')
+                        @if($user->status == \App\Constants\Status::USER_ACTIVE)
                             <span class="badge bg-success">APPROVED</span>
-                        @elseif($user->status == 'unapproved')
+                        @elseif($user->status == \App\Constants\Status::USER_UNAPPROVED)
                             <span class="badge bg-warning text-dark">UNAPPROVED</span>
-                        @elseif($user->status == 'suspended')
+                        @elseif($user->status == \App\Constants\Status::USER_BAN)
                             <span class="badge bg-danger">SUSPENDED</span>
                         @elseif($user->is_paid)
                             @php($planBadge = $user->limitation && $user->limitation->package_id != 4 ? 'PAID' : 'FREE')

@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
-class ContactController extends Controller
+class ContactControllerApi extends Controller
 {
     /**
      * Unlock and return contact details for a member profile via POST JSON.

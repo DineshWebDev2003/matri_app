@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class PlanController extends Controller
+class PlanControllerApi extends Controller
 {
     /**
      * List all active subscription plans/packages for mobile app.

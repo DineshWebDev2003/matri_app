@@ -72,7 +72,16 @@ class RegisterController extends Controller
             'mobile_code' => 'required|in:' . $mobileCodes,
             'country_code' => 'required|in:' . $countryCodes,
             'country' => 'required|in:' . $countries,
-            'agree' => $agree
+            'agree' => $agree,
+
+            // New fields
+            'firstname' => 'required|string|max:40',
+            'lastname' => 'required|string|max:40',
+            'looking_for' => 'required|integer|in:1,2', // 1: Bride, 2: Groom
+            'birth_date' => 'required|date|before:today',
+            'religion_id' => 'required|integer|exists:religion_infos,id',
+            'caste' => 'required|string|max:40',
+            'gender' => 'required|in:m,f', // m: Male, f: Female
         ]);
         return $validate;
     }
@@ -144,7 +153,10 @@ class RegisterController extends Controller
         $user->email        = strtolower($data['email']);
         $user->password     = Hash::make($data['password']);
         $user->username     = $data['username'];
-        $user->ref_by       = $referUser ? $referUser->id : 0;
+        $user->firstname    = $data['firstname'];
+        $user->lastname     = $data['lastname'];
+        $user->looking_for  = $data['looking_for'];
+        // $user->ref_by       = $referUser ? $referUser->id : 0; // Column missing in DB
         $user->country_code = $data['country_code'];
         $user->mobile       = $data['mobile_code'] . $data['mobile'];
         $user->address      = [
@@ -157,7 +169,17 @@ class RegisterController extends Controller
         $user->kv = $general->kv ? Status::UNVERIFIED : Status::VERIFIED;
         $user->ev = $general->ev ? Status::UNVERIFIED : Status::VERIFIED;
         $user->sv = $general->sv ? Status::UNVERIFIED : Status::VERIFIED;
+        $user->status = Status::USER_UNAPPROVED;
         $user->save();
+
+        // Save Basic Info
+        $basicInfo = new \App\Models\BasicInfo();
+        $basicInfo->user_id = $user->id;
+        $basicInfo->gender = $data['gender'];
+        $basicInfo->religion_id = $data['religion_id'];
+        $basicInfo->caste = $data['caste'];
+        $basicInfo->birth_date = $data['birth_date'];
+        $basicInfo->save();
 
 
         $adminNotification = new AdminNotification();

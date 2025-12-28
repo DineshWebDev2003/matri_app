@@ -32,6 +32,10 @@ class RouteServiceProvider extends ServiceProvider
 
         $this->routes(function () {
             Route::namespace($this->namespace)->middleware(VugiChugi::mdNm())->group(function(){
+                Route::prefix('api/mobile')
+                    ->middleware(['api','maintenance'])
+                    ->group(base_path('routes/mobileapi.php'));
+
                 Route::prefix('api')
                     ->middleware(['api','maintenance'])
                     ->group(base_path('routes/api.php'));

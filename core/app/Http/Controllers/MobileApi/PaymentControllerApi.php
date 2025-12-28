@@ -11,7 +11,7 @@ use App\Models\Deposit;
 use App\Models\GatewayCurrency;
 use Illuminate\Support\Str;
 
-class PaymentController extends BasePaymentController
+class PaymentControllerApi extends BasePaymentController
 {
         /**
      * Create Razorpay order for mobile app

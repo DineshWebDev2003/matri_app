@@ -7,7 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class NewMemberController extends Controller
+class NewMemberControllerApi extends Controller
 {
     /**
      * Get all members with gender, name, and age
