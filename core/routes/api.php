@@ -79,6 +79,10 @@ Route::namespace('Api')->name('api.')->group(function () {
                     return auth()->user();
                 });
 
+                // Member/Profile endpoints for web or generic API (mirror of mobile)
+                Route::get('new-members', [\App\Http\Controllers\MobileApi\NewMemberControllerApi::class, 'index'])->name('members.list');
+                Route::get('new-members/{id}', [\App\Http\Controllers\MobileApi\NewMemberControllerApi::class, 'show'])->whereNumber('id')->name('members.show');
+
                 Route::get('user-info', function () {
                     $notify[] = 'User information';
                     return response()->json([

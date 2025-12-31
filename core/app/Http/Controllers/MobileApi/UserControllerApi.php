@@ -195,6 +195,212 @@ class UserControllerApi extends BaseUserController
      * Update user profile details.
      * POST /api/mobile/user/update
      */
+    /**
+     * Return approved gallery images of authenticated user.
+     * GET /api/mobile/gallery-images
+     */
+    public function getGalleryImages()
+    {
+        try {
+            $user = auth()->user();
+            $images = \App\Models\Gallery::where('user_id', $user->id)
+                ->approved()
+                ->orderByDesc('id')
+                ->get()
+                ->map(function ($g) {
+                    return [
+                        'id'          => $g->id,
+                        'image_url'   => url('assets/images/user/gallery/' . $g->image),
+                        'uploaded_at' => $g->created_at,
+                    ];
+                });
+
+            return response()->json([
+                'status' => 'success',
+                'data'   => [
+                    'images' => $images,
+                    'total'  => $images->count(),
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Mobile getGalleryImages failed: ' . $e->getMessage());
+            return response()->json([
+                'status'  => 'error',
+                'message' => ['error' => ['Failed to fetch gallery images']],
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload one or multiple gallery images for authenticated user (mobile).
+     * POST /api/mobile/upload-gallery-image
+     */
+    /**
+     * Return current plan info & remaining upload count
+     * GET /api/mobile/user-plan
+     */
+    public function getUserPlan()
+    {
+        try {
+            $user = auth()->user()->load(['limitation', 'galleries']);
+            $limit = $user->limitation->image_upload_limit ?? 0; // -1 => unlimited
+            $galleryCount = $user->galleries->count();
+            $remaining = $limit == -1 ? -1 : max($limit - $galleryCount, 0);
+
+            return response()->json([
+                'status' => 'success',
+                'data'   => [
+                    'package_name'            => $user->limitation->package->name ?? 'FREE MATCH',
+                    'is_premium'              => $limit == -1 || ($user->limitation->package_id && $user->limitation->package_id != 4),
+                    'remaining_image_upload'  => $remaining,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Mobile getUserPlan failed: ' . $e->getMessage());
+            return response()->json([
+                'status'  => 'error',
+                'message' => ['error' => ['Failed to fetch user plan']],
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload main profile image (avatar)
+     * POST /api/mobile/upload-profile-image
+     */
+    public function uploadProfileImage(\Illuminate\Http\Request $request)
+    {
+        $validator = \Validator::make($request->all(), [
+            'profile_image' => 'required|image|mimes:jpg,jpeg,png',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => ['error' => $validator->errors()->all()],
+            ], 422);
+        }
+
+        try {
+            $user = auth()->user();
+
+            // Destination path (public assets folder so mobile app can access via URL)
+            $destination = base_path('../assets/images/user/profile');
+            if (!\File::exists($destination)) {
+                \File::makeDirectory($destination, 0755, true);
+            }
+
+            $file = $request->file('profile_image');
+            $fileName = uniqid('profile_') . '.' . $file->getClientOriginalExtension();
+            $file->move($destination, $fileName);
+
+            // Remove previous image if existed (optional)
+            if ($user->image) {
+                $old = $destination . '/' . $user->image;
+                if (is_file($old)) {
+                    @unlink($old);
+                }
+            }
+
+            // Update DB
+            $user->image = $fileName;
+            $user->save();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => ['success' => ['Profile image uploaded successfully']],
+                'data'   => [
+                    'image_url' => url('assets/images/user/profile/' . $fileName),
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Mobile uploadProfileImage failed: ' . $e->getMessage());
+            return response()->json([
+                'status'  => 'error',
+                'message' => ['error' => ['Failed to upload profile image']],
+            ], 500);
+        }
+    }
+
+    public function uploadGalleryImage(\Illuminate\Http\Request $request)
+    {
+        $validator = \Validator::make($request->all(), [
+            'images'   => 'sometimes|array',
+            'images.*' => 'image|mimes:jpg,jpeg,png',
+            'gallery_image' => 'sometimes|image|mimes:jpg,jpeg,png',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => ['error' => $validator->errors()->all()],
+            ], 422);
+        }
+
+        try {
+            $user = auth()->user();
+            // Ensure limitation relationship loaded
+            $user->load(['galleries', 'limitation']);
+
+            $limit = $user->limitation->image_upload_limit ?? 0; // -1 => unlimited
+            $current = $user->galleries->count();
+            // Build files array (support single 'gallery_image' or 'images' array)
+            $files = [];
+            if($request->hasFile('images')){
+                $files = $request->file('images');
+            } elseif($request->hasFile('gallery_image')) {
+                $files = [$request->file('gallery_image')];
+            }
+            $toUpload = count($files);
+
+            if ($limit != -1 && ($current + $toUpload) > $limit) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => ['error' => ['Image upload limit exceeded']],
+                ], 403);
+            }
+
+            $destination = base_path('../assets/images/user/gallery');
+            if (!\File::exists($destination)) {
+                \File::makeDirectory($destination, 0755, true);
+            }
+
+            $uploaded = [];
+            foreach ($files as $image) {
+                $fileName = uniqid('gallery_') . '.' . $image->getClientOriginalExtension();
+                $image->move($destination, $fileName);
+                $uploaded[] = [
+                    'user_id'    => $user->id,
+                    'image'      => $fileName,
+                    'status'     => \App\Models\Gallery::STATUS_PENDING,
+                    'type'       => \App\Models\Gallery::TYPE_PHOTO,
+                    'created_at' => now(),
+                ];
+            }
+            \App\Models\Gallery::insert($uploaded);
+
+            // Reload galleries count
+            $newCount = $current + $toUpload;
+            $remaining = $limit == -1 ? -1 : max($limit - $newCount, 0);
+
+            return response()->json([
+                'status'  => 'success',
+                'message' => ['success' => ['Image(s) uploaded successfully']],
+                'data'    => [
+                    'uploaded'            => count($uploaded),
+                    'gallery_count'       => $newCount,
+                    'remaining_uploads'   => $remaining,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Mobile uploadGalleryImage failed: ' . $e->getMessage());
+            return response()->json([
+                'status'  => 'error',
+                'message' => ['error' => ['Failed to upload image']],
+            ], 500);
+        }
+    }
+
     public function updateProfileDetails(\Illuminate\Http\Request $request)
     {
         $validator = \Validator::make($request->all(), [

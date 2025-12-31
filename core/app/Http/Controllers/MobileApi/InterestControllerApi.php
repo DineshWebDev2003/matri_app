@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers\MobileApi;
 
-use App\Http\Controllers\Api\InterestController as BaseInterestController;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Models\ShortListedProfile;
+use App\Models\ExpressInterest;
+use App\Models\UserInterest;
 
-class InterestControllerApi extends BaseInterestController
+class InterestControllerApi extends Controller
 {
     /**
      * List profiles the authenticated user has shortlisted
@@ -203,5 +208,137 @@ class InterestControllerApi extends BaseInterestController
         $filename = basename($imagePath);
         return $baseUrl . '/assets/images/user/profile/' . $filename;
     }
+
+    /**
+     * Express interest in a user
+     */
+    public function expressInterest(Request $request)
+    {
+        try {
+            $request->validate([
+                'user_id' => 'required|integer|exists:users,id',
+            ]);
+
+            $currentUserId = Auth::id();
+            $targetUserId  = $request->user_id;
+
+            if ($currentUserId == $targetUserId) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => ['error' => ['Cannot express interest in yourself']],
+                ], 400);
+            }
+
+            $existingInterest = ExpressInterest::where('interested_by', $currentUserId)
+                ->where('user_id', $targetUserId)
+                ->first();
+
+            if ($existingInterest) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => ['error' => ['Interest already expressed']],
+                ], 400);
+            }
+
+            $interest = ExpressInterest::create([
+                'user_id'       => $targetUserId,
+                'interested_by' => $currentUserId,
+                'status'        => 0,
+            ]);
+
+            UserInterest::create([
+                'user_id'        => $currentUserId,
+                'interesting_id' => $targetUserId,
+                'status'         => 0,
+            ]);
+
+            DB::table('user_limitations')
+                ->where('user_id', $currentUserId)
+                ->where('interest_express_limit', '>', 0)
+                ->decrement('interest_express_limit');
+
+            return response()->json([
+                'status'  => 'success',
+                'message' => ['success' => ['Interest expressed successfully']],
+                'data'    => [
+                    'interest_id' => $interest->id,
+                    'user_id'     => $targetUserId,
+                    'status'      => 'pending',
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => ['error' => ['Failed to express interest: '.$e->getMessage()]],
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove interest from a user
+     */
+    public function removeInterest($userId)
+    {
+        try {
+            $currentUserId = Auth::id();
+
+            $deleted = ExpressInterest::where('interested_by', $currentUserId)
+                ->where('user_id', $userId)
+                ->delete();
+
+            UserInterest::where('user_id', $currentUserId)
+                ->where('interesting_id', $userId)
+                ->delete();
+
+            if ($deleted > 0) {
+                DB::table('user_limitations')
+                    ->where('user_id', $currentUserId)
+                    ->increment('interest_express_limit');
+
+                return response()->json([
+                    'status'  => 'success',
+                    'message' => ['success' => ['Interest removed successfully']],
+                ]);
+            }
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => ['error' => ['No interest found to remove']],
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => ['error' => ['Failed to remove interest: '.$e->getMessage()]],
+            ], 500);
+        }
+    }
+
+    /**
+     * Check if user has expressed interest in a specific profile
+     */
+    public function checkInterestStatus($userId)
+    {
+        try {
+            $currentUserId = Auth::id();
+
+            $interest = ExpressInterest::where('interested_by', $currentUserId)
+                ->where('user_id', $userId)
+                ->first();
+
+            return response()->json([
+                'status' => 'success',
+                'data'   => [
+                    'interested'      => $interest ? true : false,
+                    'interest_status' => $interest ? $interest->status : null,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => ['error' => ['Failed to check interest status']],
+            ], 500);
+        }
+    }
 }
+
 

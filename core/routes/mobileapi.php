@@ -176,10 +176,43 @@ Route::namespace('MobileApi')->name('mobile_api.')->group(function () {
                     Route::any('deposit/history', 'depositHistory')->name('deposit.history');
                 });
 
-                // Profile setting
-                Route::controller('UserControllerApi')->group(function () {
-                    Route::post('profile-setting', 'submitProfile');
-                    Route::post('change-password', 'submitPassword');
+                // Profile settings routes
+                Route::controller('ProfileControllerApi')->group(function () {
+                    // Get all profile data
+                    Route::get('profile-settings', 'getProfileSettings');
+                    
+                    // Update profile sections
+                    Route::post('profile-settings/basic', 'updateBasicInfo');
+                    Route::post('profile-settings/physical-attributes', 'updatePhysicalAttributes');
+                    Route::post('profile-settings/family-info', 'updateFamilyInfo');
+                    Route::post('profile-settings/partner-expectation', 'updatePartnerExpectation');
+                    
+                    // Photos
+                    Route::post('profile-settings/photo', 'updateProfilePhoto');
+                    
+                    // Career & Education (CRUD operations)
+                    Route::apiResource('profile-settings/careers', 'CareerController');
+                    Route::apiResource('profile-settings/educations', 'EducationController');
+                });
+                
+                // Change password
+                Route::post('change-password', 'UserControllerApi@submitPassword');
+
+// -------------------------------------------------------------------------
+// Locations
+// -------------------------------------------------------------------------
+Route::get('locations/states', '\\App\\Http\\Controllers\\LocationController@states');
+
+                // Profile settings routes using existing web controller
+                Route::controller('ProfileControllerApi')->group(function () {
+                    Route::get('profile-settings', 'getProfileSettings');
+                    Route::post('profile-settings/basic', 'updateProfile');
+                    Route::post('profile-settings/partner-expectation', 'updatePartnerExpectation');
+                    Route::post('profile-settings/physical-attributes', 'updatePhysicalAttributes');
+                    Route::post('profile-settings/family-info', 'updateFamilyInfo');
+                    Route::post('profile-settings/career', 'updateCareerInfo');
+                    Route::post('profile-settings/education', 'updateEducationInfo');
+                    Route::post('profile-settings/photo', 'updateProfileImage');
                 });
 
                 // Member/Profile endpoints for mobile app

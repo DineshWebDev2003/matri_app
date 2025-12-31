@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 class UserInterest extends Model
 {
     use Searchable;
+
+    // Allow mass assignment on all attributes
+    protected $guarded = [];
     public function profile()
     {
         return $this->belongsTo(User::class, 'interesting_id');
