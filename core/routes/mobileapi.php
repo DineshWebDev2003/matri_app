@@ -101,13 +101,53 @@ Route::namespace('MobileApi')->name('mobile_api.')->group(function () {
         });
 
         Route::middleware(['check.status'])->group(function () {
+            // Registration Process Routes (Step-by-step)
+            Route::controller('RegistrationProcessController')->group(function () {
+                // Step 1: Basic Info
+                Route::post('profile/basic-info', 'submitBasicInfo');
+                Route::post('profile/basic-info/skip', 'skipBasicInfo');
+                
+                // Step 2: Physical Attributes
+                Route::post('profile/physical-attributes', 'submitPhysicalInfo');
+                Route::post('profile/physical-attributes/skip', 'skipPhysicalInfo');
+                
+                // Step 3: Family Info
+                Route::post('profile/family-info', 'submitFamilyInfo');
+                Route::post('profile/family-info/skip', 'skipFamilyInfo');
+                
+                // Step 4: Partner Expectation
+                Route::post('profile/partner-expectation', 'submitPartnerExpectation');
+                Route::post('profile/partner-expectation/skip', 'skipPartnerExpectation');
+                
+                // Step 5: Career Info
+                Route::post('profile/career-info', 'submitCareerInfo');
+                Route::post('profile/career-info/skip', 'skipCareerInfo');
+                
+                // Step 6: Education Info
+                Route::post('profile/education-info', 'submitEducationInfo');
+                Route::post('profile/education-info/skip', 'skipEducationInfo');
+            });
+
             Route::post('user-data-submit', 'UserControllerApi@userDataSubmit')->name('data.submit');
             
             // Profile routes available even if profile is NOT complete
             Route::controller('UserControllerApi')->group(function () {
                 Route::get('user/details', 'getProfileDetails')->name('user.details');
-                Route::post('user/update', 'updateProfileDetails')->name('user.update');
+                // Route::post('user/update', 'updateProfileDetails')->name('user.update'); // Deprecated
+                
+                // New Profile Update Endpoints
+                Route::post('user/update/basic-info', 'updateBasicInfo');
+                Route::post('user/update/residence-info', 'updateResidenceInfo');
+                Route::post('user/update/physical-info', 'updatePhysicalInfo');
+                Route::post('user/update/family-info', 'updateFamilyInfo');
+                Route::post('user/update/education-info', 'updateEducationInfo');
+                Route::post('user/update/career-info', 'updateCareerInfo');
+                Route::post('user/update/partner-preference', 'updatePartnerPreference');
             });
+            
+            // Recommended & New Matches (Accessible early)
+            Route::get('recommended-matches', 'RecommendedControllerApi@index')->name('matches.recommended');
+            Route::get('new-matches', 'NewestControllerApi@index')->name('matches.new');
 
             Route::middleware('registration.complete')->group(function () {
                 Route::get('dashboard', function () {
@@ -249,7 +289,7 @@ Route::get('locations/states', '\\App\\Http\\Controllers\\LocationController@sta
                 Route::get('package-info', 'PackageControllerApi@packageInfo')->name('alias.package.info');
                 Route::get('all-plans', 'PlanControllerApi@allPlans')->name('alias.all.plans');
                 Route::get('partner-options', 'PartnerOptionsController@options')->name('alias.partner.options');
-
+                
                 // User Plan/Package endpoints
                 Route::controller('UserControllerApi')->group(function () {
                     Route::get('user-plan', 'getUserPlan')->name('user.plan');

@@ -401,155 +401,393 @@ class UserControllerApi extends BaseUserController
         }
     }
 
-    public function updateProfileDetails(\Illuminate\Http\Request $request)
+    /**
+     * Update Basic Info
+     * POST /api/mobile/user/update/basic-info
+     */
+    public function updateBasicInfo(\Illuminate\Http\Request $request)
     {
         $validator = \Validator::make($request->all(), [
-            // User & Basic Info
             'firstname'      => 'nullable|string|max:40',
             'lastname'       => 'nullable|string|max:40',
-            'looking_for'    => 'nullable|in:1,2',
+            'looking_for'    => 'nullable|in:1,2', // Added from original updateProfileDetails
             'gender'         => 'nullable|in:Male,Female,m,f',
-            'religion_id'    => 'nullable|integer',
-            'caste'          => 'nullable|string|max:100',
             'birth_date'     => 'nullable|date',
             'marital_status' => 'nullable|string|max:100',
+            'religion_id'    => 'nullable|integer',
+            'caste'          => 'nullable|string|max:100',
             'mother_tongue'  => 'nullable|string|max:100',
-            'profession'     => 'nullable|string|max:100',
-            'financial_condition' => 'nullable|string|max:100',
-            'smoking_status' => 'nullable|in:0,1',
-            'drinking_status' => 'nullable|in:0,1',
-            'language'       => 'nullable|array',
-            
-            // Residence
-            'city'           => 'nullable|string|max:100',
-            'state'          => 'nullable|string|max:100',
-            'country'        => 'nullable|string|max:100',
-            'zip'            => 'nullable|string|max:20',
-
-            // Physical
-            'height'         => 'nullable|numeric',
-            'weight'         => 'nullable|numeric',
-            'blood_group'    => 'nullable|string|max:10',
-            'eye_color'      => 'nullable|string|max:40',
-            'hair_color'     => 'nullable|string|max:40',
-            'complexion'     => 'nullable|string|max:255',
-            'disability'     => 'nullable|string|max:40',
-
-            // Family
-            'father_name'    => 'nullable|string|max:100',
-            'father_profession' => 'nullable|string|max:100',
-            'father_contact' => 'nullable|string|max:20',
-            'mother_name'    => 'nullable|string|max:100',
-            'mother_profession' => 'nullable|string|max:100',
-            'mother_contact' => 'nullable|string|max:20',
-            'total_brother'  => 'nullable|integer',
-            'total_sister'   => 'nullable|integer',
-
-            // Partner Preference
-            'partner_requirements' => 'nullable|string|max:255',
-            'partner_min_age'      => 'nullable|integer',
-            'partner_max_age'      => 'nullable|integer',
-            'partner_min_height'   => 'nullable|numeric',
-            'partner_max_height'   => 'nullable|numeric',
-            'partner_max_weight'   => 'nullable|numeric',
-            'partner_religion'     => 'nullable|string',
-            'partner_marital_status' => 'nullable|string',
+            'profession'     => 'nullable|string|max:100', // Added from original updateProfileDetails
+            'financial_condition' => 'nullable|string|max:100', // Added from original updateProfileDetails
+            'smoking_status' => 'nullable|in:0,1', // Added from original updateProfileDetails
+            'drinking_status' => 'nullable|in:0,1', // Added from original updateProfileDetails
+            'languages'      => 'nullable|array', // "Speak"
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => ['error' => $validator->errors()->all()],
-            ], 422);
+            return response()->json(['status' => 'error', 'message' => ['error' => $validator->errors()->all()]], 422);
         }
 
         try {
             $user = auth()->user();
-
-            // 1. Update User table
+            
+            // User Table Updates
             if ($request->has('firstname')) $user->firstname = $request->firstname;
             if ($request->has('lastname')) $user->lastname = $request->lastname;
-            if ($request->has('looking_for')) $user->looking_for = $request->looking_for;
+            if ($request->has('looking_for')) $user->looking_for = $request->looking_for; // Added from original updateProfileDetails
             $user->save();
 
-            // 2. Update BasicInfo
+            // BasicInfo Table Updates
             $basicInfo = $user->basicInfo ?? new \App\Models\BasicInfo(['user_id' => $user->id]);
+            
             if ($request->has('gender')) {
-                $gender = $request->gender;
-                if ($gender == 'm') $gender = 'Male';
-                if ($gender == 'f') $gender = 'Female';
-                $basicInfo->gender = $gender;
+                $g = $request->gender;
+                $basicInfo->gender = ($g == 'm') ? 'Male' : (($g == 'f') ? 'Female' : $g);
             }
-            if ($request->has('religion_id')) $basicInfo->religion_id = $request->religion_id;
-            if ($request->has('caste')) $basicInfo->caste = $request->caste;
             if ($request->has('birth_date')) $basicInfo->birth_date = $request->birth_date;
             if ($request->has('marital_status')) $basicInfo->marital_status = $request->marital_status;
-            if ($request->has('mother_tongue')) $basicInfo->mother_tongue = $request->mother_tongue;
-            if ($request->has('profession')) $basicInfo->profession = $request->profession;
-            if ($request->has('financial_condition')) $basicInfo->financial_condition = $request->financial_condition;
-            if ($request->has('smoking_status')) $basicInfo->smoking_status = $request->smoking_status;
-            if ($request->has('drinking_status')) $basicInfo->drinking_status = $request->drinking_status;
-            if ($request->has('language')) $basicInfo->language = $request->language;
-            
-            // Residence in BasicInfo
-            if ($request->has('city')) $basicInfo->city = $request->city;
-            if ($request->has('state')) $basicInfo->state = $request->state;
-            if ($request->has('country')) $basicInfo->country = $request->country;
-            if ($request->has('zip') || $request->has('city') || $request->has('state')) {
-                $presentAddr = $basicInfo->present_address ?? (object)[];
-                if ($request->has('country')) $presentAddr->country = $request->country;
-                if ($request->has('state')) $presentAddr->state = $request->state;
-                if ($request->has('city')) $presentAddr->city = $request->city;
-                if ($request->has('zip')) $presentAddr->zip = $request->zip;
-                $basicInfo->present_address = $presentAddr;
+            if ($request->has('religion_id')) {
+                $basicInfo->religion_id = $request->religion_id;
+                $basicInfo->religion = optional(\App\Models\ReligionInfo::find($request->religion_id))->name;
             }
+            if ($request->has('caste')) $basicInfo->caste = $request->caste;
+            if ($request->has('mother_tongue')) $basicInfo->mother_tongue = $request->mother_tongue;
+            if ($request->has('profession')) $basicInfo->profession = $request->profession; // Added from original updateProfileDetails
+            if ($request->has('financial_condition')) $basicInfo->financial_condition = $request->financial_condition; // Added from original updateProfileDetails
+            if ($request->has('smoking_status')) $basicInfo->smoking_status = $request->smoking_status; // Added from original updateProfileDetails
+            if ($request->has('drinking_status')) $basicInfo->drinking_status = $request->drinking_status; // Added from original updateProfileDetails
+            if ($request->has('languages')) $basicInfo->language = $request->languages;
+            
             $basicInfo->save();
 
-            // 3. Update Physical Attributes
-            $physical = $user->physicalAttributes ?? new \App\Models\PhysicalAttribute(['user_id' => $user->id]);
-            if ($request->has('height')) $physical->height = $request->height;
-            if ($request->has('weight')) $physical->weight = $request->weight;
-            if ($request->has('blood_group')) $physical->blood_group = $request->blood_group;
-            if ($request->has('eye_color')) $physical->eye_color = $request->eye_color;
-            if ($request->has('hair_color')) $physical->hair_color = $request->hair_color;
-            if ($request->has('complexion')) $physical->complexion = $request->complexion;
-            if ($request->has('disability')) $physical->disability = $request->disability;
-            $physical->save();
+            return response()->json(['status' => 'success', 'message' => ['success' => ['Basic Info updated successfully']]]);
 
-            // 4. Update Family Info
-            $family = $user->family ?? new \App\Models\FamilyInfo(['user_id' => $user->id]);
-            if ($request->has('father_name')) $family->father_name = $request->father_name;
-            if ($request->has('father_profession')) $family->father_profession = $request->father_profession;
-            if ($request->has('father_contact')) $family->father_contact = $request->father_contact;
-            if ($request->has('mother_name')) $family->mother_name = $request->mother_name;
-            if ($request->has('mother_profession')) $family->mother_profession = $request->mother_profession;
-            if ($request->has('mother_contact')) $family->mother_contact = $request->mother_contact;
-            if ($request->has('total_brother')) $family->total_brother = $request->total_brother;
-            if ($request->has('total_sister')) $family->total_sister = $request->total_sister;
-            $family->save();
-
-            // 5. Update Partner Expectation
-            $partner = $user->partnerExpectation ?? new \App\Models\PartnerExpectation(['user_id' => $user->id]);
-            if ($request->has('partner_requirements')) $partner->general_requirement = $request->partner_requirements;
-            if ($request->has('partner_min_age')) $partner->min_age = $request->partner_min_age;
-            if ($request->has('partner_max_age')) $partner->max_age = $request->partner_max_age;
-            if ($request->has('partner_min_height')) $partner->min_height = $request->partner_min_height;
-            if ($request->has('partner_max_height')) $partner->max_height = $request->partner_max_height;
-            if ($request->has('partner_max_weight')) $partner->max_weight = $request->partner_max_weight;
-            if ($request->has('partner_religion')) $partner->religion = $request->partner_religion;
-            if ($request->has('partner_marital_status')) $partner->marital_status = $request->partner_marital_status;
-            $partner->save();
-
-            return response()->json([
-                'status'  => 'success',
-                'message' => ['success' => ['Profile updated successfully']],
-            ]);
         } catch (\Throwable $e) {
-            \Log::error('Mobile updateProfileDetails failed: ' . $e->getMessage());
-            return response()->json([
-                'status'  => 'error',
-                'message' => ['error' => ['Failed to update profile: ' . $e->getMessage()]],
-            ], 500);
+            \Log::error('Mobile updateBasicInfo failed: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => ['error' => ['Failed to update Basic Info']]], 500);
         }
     }
+
+    /**
+     * Update Residence Info
+     * POST /api/mobile/user/update/residence-info
+     */
+    public function updateResidenceInfo(\Illuminate\Http\Request $request)
+    {
+        $validator = \Validator::make($request->all(), [
+            'country' => 'nullable|string|max:100',
+            'state'   => 'nullable|string|max:100',
+            'city'    => 'nullable|string|max:100',
+            'zip'     => 'nullable|string|max:40',
+            'address' => 'nullable|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 'error', 'message' => ['error' => $validator->errors()->all()]], 422);
+        }
+
+        try {
+            $user = auth()->user();
+            $basicInfo = $user->basicInfo ?? new \App\Models\BasicInfo(['user_id' => $user->id]);
+
+            // Direct columns
+            if ($request->has('country')) $basicInfo->country = $request->country;
+            if ($request->has('state'))   $basicInfo->state = $request->state;
+            if ($request->has('city'))    $basicInfo->city = $request->city;
+            
+            // User 'address' json column and BasicInfo 'present_address' json column
+            // We'll update BasicInfo present_address primarily as User.address is often for billing/profile
+            $presentAddr = $basicInfo->present_address ?? (object)[];
+            if ($request->has('country')) $presentAddr->country = $request->country;
+            if ($request->has('state'))   $presentAddr->state = $request->state;
+            if ($request->has('city'))    $presentAddr->city = $request->city;
+            if ($request->has('zip'))     $presentAddr->zip = $request->zip;
+            if ($request->has('address')) $presentAddr->address = $request->address;
+            
+            $basicInfo->present_address = $presentAddr;
+            $basicInfo->save();
+
+            // Also update main user address for consistency if needed
+            // The original updateProfileDetails only updated basicInfo->present_address, not user->address directly.
+            // Keeping it consistent with the original behavior for now.
+            // $userAddr = $user->address ?? (object)[];
+            // if ($request->has('address')) $userAddr->address = $request->address;
+            // if ($request->has('zip'))     $userAddr->zip = $request->zip;
+            // $user->address = $userAddr;
+            // $user->save();
+
+            return response()->json(['status' => 'success', 'message' => ['success' => ['Residence Info updated successfully']]]);
+
+        } catch (\Throwable $e) {
+            \Log::error('Mobile updateResidenceInfo failed: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => ['error' => ['Failed to update Residence Info']]], 500);
+        }
+    }
+
+    /**
+     * Update Physical Info
+     * POST /api/mobile/user/update/physical-info
+     */
+    public function updatePhysicalInfo(\Illuminate\Http\Request $request)
+    {
+        $validator = \Validator::make($request->all(), [
+            'height'          => 'nullable|numeric',
+            'weight'          => 'nullable|numeric',
+            'body_type'       => 'nullable|string|max:50',
+            'complexion'      => 'nullable|string|max:50',
+            'blood_group'     => 'nullable|string|max:10',
+            'physical_status' => 'nullable|string|max:50',
+            'eye_color'       => 'nullable|string|max:50',
+            'hair_color'      => 'nullable|string|max:50',
+            'disability'      => 'nullable|string|max:100',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 'error', 'message' => ['error' => $validator->errors()->all()]], 422);
+        }
+
+        try {
+            $user = auth()->user();
+            $physical = $user->physicalAttributes ?? new \App\Models\PhysicalAttribute(['user_id' => $user->id]);
+
+            if ($request->has('height'))      $physical->height = $request->height;
+            if ($request->has('weight'))      $physical->weight = $request->weight;
+            if ($request->has('body_type'))   $physical->body_type = $request->body_type;
+            if ($request->has('complexion'))  $physical->complexion = $request->complexion;
+            if ($request->has('blood_group')) $physical->blood_group = $request->blood_group;
+            if ($request->has('physical_status')) $physical->physical_status = $request->physical_status;
+            if ($request->has('eye_color'))   $physical->eye_color = $request->eye_color;
+            if ($request->has('hair_color'))  $physical->hair_color = $request->hair_color;
+            if ($request->has('disability'))  $physical->disability = $request->disability;
+
+            $physical->save();
+
+            return response()->json(['status' => 'success', 'message' => ['success' => ['Physical Info updated successfully']]]);
+
+        } catch (\Throwable $e) {
+            \Log::error('Mobile updatePhysicalInfo failed: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => ['error' => ['Failed to update Physical Info']]], 500);
+        }
+    }
+
+    /**
+     * Update Family Info
+     * POST /api/mobile/user/update/family-info
+     */
+    public function updateFamilyInfo(\Illuminate\Http\Request $request)
+    {
+        $validator = \Validator::make($request->all(), [
+            'father_name'       => 'nullable|string|max:100',
+            'father_profession' => 'nullable|string|max:100',
+            'father_contact'    => 'nullable|string|max:50',
+            'mother_name'       => 'nullable|string|max:100',
+            'mother_profession' => 'nullable|string|max:100',
+            'mother_contact'    => 'nullable|string|max:50',
+            'total_brother'     => 'nullable|integer',
+            'total_sister'      => 'nullable|integer',
+            'family_type'       => 'nullable|string|max:50',
+            'family_status'     => 'nullable|string|max:50',
+            'family_values'     => 'nullable|string|max:50',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 'error', 'message' => ['error' => $validator->errors()->all()]], 422);
+        }
+
+        try {
+            $user = auth()->user();
+            $family = $user->family ?? new \App\Models\FamilyInfo(['user_id' => $user->id]);
+
+            if ($request->has('father_name'))       $family->father_name = $request->father_name;
+            if ($request->has('father_profession')) $family->father_profession = $request->father_profession;
+            if ($request->has('father_contact'))    $family->father_contact = $request->father_contact;
+            if ($request->has('mother_name'))       $family->mother_name = $request->mother_name;
+            if ($request->has('mother_profession')) $family->mother_profession = $request->mother_profession;
+            if ($request->has('mother_contact'))    $family->mother_contact = $request->mother_contact;
+            if ($request->has('total_brother'))     $family->total_brother = $request->total_brother;
+            if ($request->has('total_sister'))      $family->total_sister = $request->total_sister;
+            if ($request->has('family_type'))       $family->family_type = $request->family_type;
+            if ($request->has('family_status'))     $family->family_status = $request->family_status;
+            if ($request->has('family_values'))     $family->family_values = $request->family_values;
+
+            $family->save();
+
+            return response()->json(['status' => 'success', 'message' => ['success' => ['Family Info updated successfully']]]);
+
+        } catch (\Throwable $e) {
+            \Log::error('Mobile updateFamilyInfo failed: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => ['error' => ['Failed to update Family Info']]], 500);
+        }
+    }
+
+    /**
+     * Update Education Info
+     * POST /api/mobile/user/update/education-info
+     * Expects: [ { "degree": "B.Tech", "institution": "ABC", "start": 2010, "end": 2014, "field_of_study": "CS" } ]
+     */
+    public function updateEducationInfo(\Illuminate\Http\Request $request)
+    {
+        $validator = \Validator::make($request->all(), [
+            'education'        => 'required|array',
+            'education.*.degree' => 'required|string',
+            'education.*.institution' => 'nullable|string',
+            'education.*.year'        => 'nullable|string', // End Year
+            'education.*.field_of_study' => 'nullable|string',
+            'education.*.start'          => 'nullable|integer',
+            'education.*.end'            => 'nullable|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 'error', 'message' => ['error' => $validator->errors()->all()]], 422);
+        }
+
+        try {
+            $user = auth()->user();
+            
+            // Delete existing and recreate (Admin Panel logic)
+            $user->educationInfo()->delete();
+
+            foreach ($request->education as $edu) {
+                if(empty(array_filter($edu))) continue;
+
+                $user->educationInfo()->create([
+                    'degree'      => $edu['degree'] ?? null,
+                    'institution' => $edu['institution'] ?? null,
+                    'year'        => $edu['year'] ?? null, // Often used as 'Passing Year'
+                    // Add extra fields if table supports them
+                    'field_of_study' => $edu['field_of_study'] ?? null,
+                    'start'          => $edu['start'] ?? null,
+                    'end'            => $edu['end'] ?? null,
+                ]);
+            }
+
+            return response()->json(['status' => 'success', 'message' => ['success' => ['Education Info updated successfully']]]);
+
+        } catch (\Throwable $e) {
+            \Log::error('Mobile updateEducationInfo failed: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => ['error' => ['Failed to update Education Info']]], 500);
+        }
+    }
+
+    /**
+     * Update Career Info
+     * POST /api/mobile/user/update/career-info
+     * Expects: [ { "designation": "Dev", "company": "X", "salary": "10L", "start": 2020, "end": 2024 } ]
+     */
+    public function updateCareerInfo(\Illuminate\Http\Request $request)
+    {
+        $validator = \Validator::make($request->all(), [
+            'career'                 => 'required|array',
+            'career.*.designation'   => 'required|string',
+            'career.*.company'       => 'nullable|string',
+            'career.*.year'          => 'nullable|string',
+            'career.*.annual_income' => 'nullable|string', // For mapping to salary_details
+            'career.*.salary'        => 'nullable|string', // Alternative for annual_income
+            'career.*.start'         => 'nullable|integer',
+            'career.*.end'           => 'nullable|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 'error', 'message' => ['error' => $validator->errors()->all()]], 422);
+        }
+
+        try {
+            $user = auth()->user();
+            
+            // Delete existing and recreate
+            $user->careerInfo()->delete();
+
+            foreach ($request->career as $car) {
+                if(empty(array_filter($car))) continue;
+
+                $user->careerInfo()->create([
+                    'designation'    => $car['designation'] ?? null,
+                    'company'        => $car['company'] ?? null,
+                    'years'          => $car['year'] ?? null, // Working since/Duration
+                    // Map Annual Income -> salary_details
+                    'salary_details' => $car['annual_income'] ?? ($car['salary'] ?? null),
+                    'start'          => $car['start'] ?? null,
+                    'end'            => $car['end'] ?? null,
+                ]);
+            }
+
+            return response()->json(['status' => 'success', 'message' => ['success' => ['Career Info updated successfully']]]);
+
+        } catch (\Throwable $e) {
+            \Log::error('Mobile updateCareerInfo failed: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => ['error' => ['Failed to update Career Info']]], 500);
+        }
+    }
+
+    /**
+     * Update Partner Preference
+     * POST /api/mobile/user/update/partner-preference
+     */
+    public function updatePartnerPreference(\Illuminate\Http\Request $request)
+    {
+        $validator = \Validator::make($request->all(), [
+            'min_age'         => 'nullable|integer',
+            'max_age'         => 'nullable|integer',
+            'min_height'      => 'nullable|numeric',
+            'max_height'      => 'nullable|numeric',
+            'marital_status'  => 'nullable|string',
+            'religion'        => 'nullable|string', // IDs or Names
+            'caste'           => 'nullable|string',
+            'mother_tongue'   => 'nullable|string',
+            'country'         => 'nullable|string',
+            'education'       => 'nullable|string',
+            'occupation'      => 'nullable|string',
+            'annual_income'   => 'nullable|string',
+            'partner_requirements' => 'nullable|string|max:255', // Added from original updateProfileDetails
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 'error', 'message' => ['error' => $validator->errors()->all()]], 422);
+        }
+
+        try {
+            $user = auth()->user();
+            $partner = $user->partnerExpectation ?? new \App\Models\PartnerExpectation(['user_id' => $user->id]);
+
+            if ($request->has('min_age'))      $partner->min_age = $request->min_age;
+            if ($request->has('max_age'))      $partner->max_age = $request->max_age;
+            if ($request->has('min_height'))   $partner->min_height = $request->min_height;
+            if ($request->has('max_height'))   $partner->max_height = $request->max_height;
+            if ($request->has('marital_status')) $partner->marital_status = $request->marital_status;
+            if ($request->has('religion'))     $partner->religion = $request->religion;
+            
+            // Mapping new fields to existing columns or 'general_requirement'/'other'
+            // Assuming 'caste' and 'mother_tongue' might have dedicated columns or can be appended to general_requirement
+            if ($request->has('caste')) {
+                // If PartnerExpectation has a 'caste' column, use it. Otherwise, append to general_requirement.
+                // For now, assuming it might exist or can be part of general_requirement.
+                // Based on common schema, it's likely a direct column.
+                $partner->caste = $request->caste; 
+            }
+            if ($request->has('mother_tongue')) {
+                // If PartnerExpectation has a 'language' or 'mother_tongue' column, use it.
+                // Otherwise, append to general_requirement.
+                // Assuming 'language' is the most likely column for this.
+                $partner->language = [$request->mother_tongue]; // Storing as array if 'language' is JSON/array type
+            }
+            if ($request->has('country'))      $partner->country = $request->country;
+            if ($request->has('education'))    $partner->education = $request->education;
+            if ($request->has('occupation'))   $partner->profession = $request->occupation; // 'profession' col usually
+            
+            // Map annual_income to financial_condition if it exists in PartnerExpectation
+            if ($request->has('annual_income')) $partner->financial_condition = $request->annual_income; 
+            
+            // General requirements from original updateProfileDetails
+            if ($request->has('partner_requirements')) $partner->general_requirement = $request->partner_requirements;
+
+            $partner->save();
+
+            return response()->json(['status' => 'success', 'message' => ['success' => ['Partner Preference updated successfully']]]);
+
+        } catch (\Throwable $e) {
+            \Log::error('Mobile updatePartnerPreference failed: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => ['error' => ['Failed to update Partner Preference']]], 500);
+        }
+    }
+
 }

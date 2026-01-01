@@ -81,7 +81,8 @@ class RegisterController extends Controller
             'looking_for' => 'required|integer|in:1,2', // 1: Bride, 2: Groom
             'birth_date' => 'required|date|before:today',
             'religion_id' => 'required|integer|exists:religion_infos,id',
-            'caste_id' => 'required|integer|exists:caste_infos,id',
+            'caste_id' => 'nullable|integer|exists:caste_infos,id',
+            'caste' => 'required_without:caste_id|nullable|string|max:100',
             'ip_address' => 'nullable|ip',
             'gender' => 'required|in:m,f', // m: Male, f: Female
 
@@ -185,9 +186,17 @@ class RegisterController extends Controller
         $basicInfo->user_id = $user->id;
         $basicInfo->gender = $data['gender'];
         $basicInfo->religion_id = $data['religion_id'];
-        $casteRecord = CasteInfo::find($data['caste_id']);
-        $basicInfo->caste = $casteRecord->name ?? null;
+
+        // Handle Caste (ID or Name)
+        if (!empty($data['caste_id'])) {
+            $casteRecord = CasteInfo::find($data['caste_id']);
+            $basicInfo->caste = $casteRecord->name ?? null;
+        } elseif (!empty($data['caste'])) {
+            $basicInfo->caste = $data['caste'];
+        }
+        
         $basicInfo->birth_date = $data['birth_date'];
+        
         // Save location for admin panel display
         $basicInfo->country = $data['country'] ?? null;
         $basicInfo->state   = $data['state']   ?? null;
