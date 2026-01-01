@@ -28,8 +28,8 @@ class RecommendedControllerApi extends Controller
             $query = User::select('users.*')
                         ->join('basic_infos', 'users.id', '=', 'basic_infos.user_id')
                         ->where('users.status', 1) // Active users
-                        ->where('users.id', '!=', $user->id); // Exclude self
-                        // ->where('users.profile_complete', 1); // SHOW ALL (even incomplete profiles)
+                        ->where('users.id', '!=', $user->id) // Exclude self
+                        ->with(['basicInfo.religionInfo', 'physicalAttributes', 'limitation.package']);
 
             // Gender filter
             if (!empty($targetGender)) {
@@ -42,7 +42,7 @@ class RecommendedControllerApi extends Controller
             $query->orderByRaw("CASE 
                 WHEN LOWER(basic_infos.caste) = ? THEN 1 
                 ELSE 2 
-            END ASC", [strtolower($userCaste)]);
+END ASC", [strtolower($userCaste)]);
 
             $query->orderBy('users.id', 'desc');
 
@@ -50,9 +50,20 @@ class RecommendedControllerApi extends Controller
 
             // Format data similar to what lists usually need
             $data = $users->getCollection()->transform(function($u) {
-                // Address null formatting
                 $age = $u->basicInfo && $u->basicInfo->birth_date ? \Carbon\Carbon::parse($u->basicInfo->birth_date)->age : 'N/A';
                 
+                $city = $u->basicInfo->city ?? null;
+                if (empty($city) && isset($u->basicInfo->present_address->city)) {
+                    $city = $u->basicInfo->present_address->city;
+                }
+
+                $state = $u->basicInfo->state ?? null;
+                if (empty($state) && isset($u->basicInfo->present_address->state)) {
+                    $state = $u->basicInfo->present_address->state;
+                }
+
+                $packageName = $u->limitation->package->name ?? 'FREE MATCH';
+
                 return [
                     'id' => $u->id,
                     'profile_id' => $u->profile_id,
@@ -65,12 +76,9 @@ class RecommendedControllerApi extends Controller
                     'religion'  => $u->basicInfo->religionInfo->name ?? 'N/A',
                     'caste'     => $u->basicInfo->caste ?? 'N/A',
                     'profession'=> $u->basicInfo->profession ?? 'N/A',
-                    // Handle "City, State, Country" gracefully
-                    'location'  => implode(', ', array_filter([
-                        $u->basicInfo->present_address->city ?? null,
-                        $u->basicInfo->present_address->state ?? null,
-                        $u->basicInfo->present_address->country ?? null
-                    ])),
+                    'city'      => $city ?: 'N/A',
+                    'state'     => $state ?: 'N/A',
+                    'package_name' => $packageName,
                     'image'     => $u->image ? asset('assets/images/user/profile/' . $u->image) : asset('assets/images/default.png'),
                     'is_interested' => false, 
                 ];

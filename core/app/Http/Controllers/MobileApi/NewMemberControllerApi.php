@@ -128,7 +128,7 @@ class NewMemberControllerApi extends Controller
             $total = $query->count();
 
             // Get paginated users
-            $users = $query->with('basicInfo')
+            $users = $query->with(['basicInfo.religionInfo', 'physicalAttributes', 'limitation.package'])
                 ->orderBy('users.created_at', 'desc')
                 ->offset(($page - 1) * $perPage)
                 ->limit($perPage)
@@ -200,7 +200,7 @@ class NewMemberControllerApi extends Controller
                 'educationInfo',
                 'careerInfo',
                 'galleries',
-                'limitation'
+                'limitation.package'
             ])->find($id);
 
             if (!$user) {
@@ -243,7 +243,7 @@ class NewMemberControllerApi extends Controller
 
             // Load basic_info relationship if not already loaded
             if (!isset($user->basic_info) && method_exists($user, 'basicInfo')) {
-                $user->load('basicInfo');
+                $user->load(['basicInfo', 'limitation.package']);
             }
 
             // Get basic_info data
@@ -281,61 +281,39 @@ class NewMemberControllerApi extends Controller
                 $gender = $user->gender;
             }
 
-            // Get location from multiple possible fields
-            $location = null;
-            
-            // Try basicInfo city first (most reliable for this app)
+            // Get city from multiple possible fields
+            $city = null;
             if ($basicInfo && isset($basicInfo->city) && $basicInfo->city && $basicInfo->city !== 'N/A' && trim($basicInfo->city) !== '') {
-                $location = $basicInfo->city;
+                $city = $basicInfo->city;
             }
-            
-            // Try user's city field
-            if (!$location && isset($user->city) && $user->city && $user->city !== 'N/A' && trim($user->city) !== '') {
-                $location = $user->city;
-            }
-            
-            // Try user's present_city
-            if (!$location && isset($user->present_city) && $user->present_city && $user->present_city !== 'N/A' && trim($user->present_city) !== '') {
-                $location = $user->present_city;
-            }
-            
-            // Try basicInfo present_address if it's a JSON object
-            if (!$location && $basicInfo && isset($basicInfo->present_address)) {
+            if (!$city && $basicInfo && isset($basicInfo->present_address)) {
                 if (is_object($basicInfo->present_address) && isset($basicInfo->present_address->city)) {
-                    $location = $basicInfo->present_address->city;
+                    $city = $basicInfo->present_address->city;
                 } elseif (is_array($basicInfo->present_address) && isset($basicInfo->present_address['city'])) {
-                    $location = $basicInfo->present_address['city'];
+                    $city = $basicInfo->present_address['city'];
                 }
             }
             
-            // Try permanent_address in basicInfo
-            if (!$location && $basicInfo && isset($basicInfo->permanent_address)) {
-                if (is_object($basicInfo->permanent_address) && isset($basicInfo->permanent_address->city)) {
-                    $location = $basicInfo->permanent_address->city;
-                } elseif (is_array($basicInfo->permanent_address) && isset($basicInfo->permanent_address['city'])) {
-                    $location = $basicInfo->permanent_address['city'];
+            // Get state
+            $state = null;
+            if ($basicInfo && isset($basicInfo->state) && $basicInfo->state && $basicInfo->state !== 'N/A' && trim($basicInfo->state) !== '') {
+                $state = $basicInfo->state;
+            }
+            if (!$state && $basicInfo && isset($basicInfo->present_address)) {
+                if (is_object($basicInfo->present_address) && isset($basicInfo->present_address->state)) {
+                    $state = $basicInfo->present_address->state;
+                } elseif (is_array($basicInfo->present_address) && isset($basicInfo->present_address['state'])) {
+                    $state = $basicInfo->present_address['state'];
                 }
             }
-            
-            // Try user's address field (might be JSON)
-            if (!$location && isset($user->address)) {
-                if (is_object($user->address) && isset($user->address->city)) {
-                    $location = $user->address->city;
-                } elseif (is_array($user->address) && isset($user->address['city'])) {
-                    $location = $user->address['city'];
-                } elseif (is_string($user->address)) {
-                    $decoded = json_decode($user->address, true);
-                    if (is_array($decoded) && isset($decoded['city'])) {
-                        $location = $decoded['city'];
-                    }
-                }
-            }
-            
+
             // Get image
             $imageUrl = null;
             if (isset($user->image) && $user->image && $user->image !== 'N/A') {
                 $imageUrl = $this->getImageUrl($user->image);
             }
+
+            $packageName = $user->limitation->package->name ?? 'FREE MATCH';
 
             return [
                 'id' => $user->id ?? null,
@@ -344,7 +322,9 @@ class NewMemberControllerApi extends Controller
                 'name' => trim(($user->firstname ?? '') . ' ' . ($user->lastname ?? '')),
                 'gender' => $gender,
                 'age' => $age,
-                'location' => $location ?? 'N/A',
+                'city' => $city ?? 'N/A',
+                'state' => $state ?? 'N/A',
+                'package_name' => $packageName,
                 'image' => $imageUrl,
                 'looking_for' => $user->looking_for ?? null,
                 'email' => $user->email ?? '',

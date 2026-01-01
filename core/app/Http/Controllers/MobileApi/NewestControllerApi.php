@@ -24,8 +24,8 @@ class NewestControllerApi extends Controller
             }
 
             $query = User::where('status', 1) // Active users
-                        ->where('id', '!=', $user->id); // Exclude self
-                        // ->where('profile_complete', 1); // SHOW ALL (even incomplete profiles)
+                        ->where('id', '!=', $user->id) // Exclude self
+                        ->with(['basicInfo.religionInfo', 'physicalAttributes', 'limitation.package']);
             if (!empty($targetGender)) {
                 $query->whereHas('basicInfo', function($q) use ($targetGender) {
                     $q->whereIn('gender', $targetGender);
@@ -42,6 +42,18 @@ class NewestControllerApi extends Controller
                 // Basic data structure reuse
                 $age = $u->basicInfo && $u->basicInfo->birth_date ? \Carbon\Carbon::parse($u->basicInfo->birth_date)->age : 'N/A';
                 
+                $city = $u->basicInfo->city ?? null;
+                if (empty($city) && isset($u->basicInfo->present_address->city)) {
+                    $city = $u->basicInfo->present_address->city;
+                }
+
+                $state = $u->basicInfo->state ?? null;
+                if (empty($state) && isset($u->basicInfo->present_address->state)) {
+                    $state = $u->basicInfo->present_address->state;
+                }
+
+                $packageName = $u->limitation->package->name ?? 'FREE MATCH';
+
                 return [
                     'id' => $u->id,
                     'profile_id' => $u->profile_id,
@@ -54,12 +66,9 @@ class NewestControllerApi extends Controller
                     'religion'  => $u->basicInfo->religionInfo->name ?? 'N/A',
                     'caste'     => $u->basicInfo->caste ?? 'N/A',
                     'profession'=> $u->basicInfo->profession ?? 'N/A',
-                    // Handle "City, State, Country" gracefully
-                    'location'  => implode(', ', array_filter([
-                        $u->basicInfo->present_address->city ?? null,
-                        $u->basicInfo->present_address->state ?? null,
-                        $u->basicInfo->present_address->country ?? null
-                    ])),
+                    'city'      => $city ?: 'N/A',
+                    'state'     => $state ?: 'N/A',
+                    'package_name' => $packageName,
                     'image'     => $u->image ? asset('assets/images/user/profile/' . $u->image) : asset('assets/images/default.png'),
                     'joined_at' => $u->created_at->diffForHumans(),
                 ];

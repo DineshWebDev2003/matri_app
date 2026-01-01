@@ -64,6 +64,7 @@ class RegisterController extends Controller
         $countryCodes = implode(',', array_keys($countryData));
         $mobileCodes = implode(',', array_column($countryData, 'dial_code'));
         $countries = implode(',', array_column($countryData, 'country'));
+        \Log::info('Register Data: ' . json_encode($data));
         $validate = Validator::make($data, [
             'email' => 'required|string|email|unique:users',
             'mobile' => 'required|integer',
@@ -81,7 +82,7 @@ class RegisterController extends Controller
             'looking_for' => 'required|integer|in:1,2', // 1: Bride, 2: Groom
             'birth_date' => 'required|date|before:today',
             'religion_id' => 'required|integer|exists:religion_infos,id',
-            'caste_id' => 'nullable|integer|exists:caste_infos,id',
+            'caste_id' => 'sometimes|nullable|integer|exists:caste_infos,id',
             'caste' => 'required_without:caste_id|nullable|string|max:100',
             'ip_address' => 'nullable|ip',
             'gender' => 'required|in:m,f', // m: Male, f: Female
