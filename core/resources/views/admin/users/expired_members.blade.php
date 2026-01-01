@@ -24,7 +24,7 @@
                                 <div class="col-md-6 mb-1">
                                     <div><span style="font-weight:600;">Gender</span>: <span style="font-weight:400;">{{ $user->basicInfo->gender ?? 'N/A' }}</span></div>
                                     <div><span style="font-weight:600;">Mobile</span>: <span style="font-weight:400;">{{ $user->mobile }}</span></div>
-                                    <div><span style="font-weight:600;">Religion Name</span>: <span style="font-weight:400;">{{ optional($user->basicInfo->religion)->name ?? 'N/A' }}</span></div>
+                                    <div><span style="font-weight:600;">Religion Name</span>: <span style="font-weight:400;">{{ optional($user->basicInfo->religionInfo)->name ?? 'N/A' }}</span></div>
                                     <div><span style="font-weight:600;">Caste Name</span>: <span style="font-weight:400;">{{ $user->basicInfo->caste ?? 'N/A' }}</span></div>
                                     <div><span style="font-weight:600;">Mother Tongue</span>: <span style="font-weight:400;">{{ $user->basicInfo->mother_tongue ?? 'N/A' }}</span></div>
                                     <div><span style="font-weight:600;">Marital Status</span>: <span style="font-weight:400;">{{ $user->basicInfo->marital_status ?? 'N/A' }}</span></div>

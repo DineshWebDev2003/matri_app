@@ -807,7 +807,7 @@ if ($request->filled('status') && is_numeric($request->input('status'))) {
     public function activeToPaid(Request $request)
     {
         $pageTitle = 'Approved Members';
-        $query = User::with(['limitation.package','basicInfo', 'basicInfo.religion'])
+        $query = User::with(['limitation.package','basicInfo', 'basicInfo.religionInfo'])
             ->where('status', Status::USER_ACTIVE)
             ->whereHas('limitation', function($q){
                 $q->where('package_id',4); // free plan (approved)
@@ -1037,7 +1037,7 @@ if ($request->filled('status') && is_numeric($request->input('status'))) {
     public function expiredMembers(Request $request)
     {
         $pageTitle = 'Expired Members';
-        $users = User::with(['limitation.package','basicInfo', 'basicInfo.religion'])
+        $users = User::with(['limitation.package','basicInfo', 'basicInfo.religionInfo'])
             ->whereHas('limitation', function($q){
                 $q->whereNotNull('expire_date')
                   ->where('expire_date','<', now());
@@ -1052,7 +1052,7 @@ if ($request->filled('status') && is_numeric($request->input('status'))) {
         $packageFilter = $request->filled('package') ? (int) $request->input('package') : null;
         $search = trim((string) $request->input('search'));
 
-        $usersQuery = User::with(['limitation.package', 'basicInfo', 'basicInfo.religion'])
+        $usersQuery = User::with(['limitation.package', 'basicInfo', 'basicInfo.religionInfo'])
             ->where('status', Status::USER_ACTIVE)
             ->whereHas('limitation', function ($q) use ($packageFilter) {
                 $q->whereIn('package_id', [1, 2, 3]);
