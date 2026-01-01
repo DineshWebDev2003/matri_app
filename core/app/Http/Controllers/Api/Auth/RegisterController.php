@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use App\Models\CasteInfo;
 
 class RegisterController extends Controller
 {
@@ -80,8 +81,15 @@ class RegisterController extends Controller
             'looking_for' => 'required|integer|in:1,2', // 1: Bride, 2: Groom
             'birth_date' => 'required|date|before:today',
             'religion_id' => 'required|integer|exists:religion_infos,id',
-            'caste' => 'required|string|max:40',
+            'caste_id' => 'required|integer|exists:caste_infos,id',
+            'ip_address' => 'nullable|ip',
             'gender' => 'required|in:m,f', // m: Male, f: Female
+
+            // Optional address details for better profile completeness
+            'state'   => 'sometimes|string|max:100',
+            'city'    => 'sometimes|string|max:100',
+            'address' => 'sometimes|string|max:255',
+            'zip'     => 'sometimes|string|max:20',
         ]);
         return $validate;
     }
@@ -160,11 +168,11 @@ class RegisterController extends Controller
         $user->country_code = $data['country_code'];
         $user->mobile       = $data['mobile_code'] . $data['mobile'];
         $user->address      = [
-            'address' => '',
-            'state' => '',
-            'zip' => '',
-            'country' => isset($data['country']) ? $data['country'] : null,
-            'city' => ''
+            'address' => $data['address'] ?? '',
+            'state'   => $data['state']   ?? 'Not specified',
+            'zip'     => $data['zip']     ?? '',
+            'country' => $data['country'] ?? 'Not specified',
+            'city'    => $data['city']    ?? ''
         ];
         $user->kv = $general->kv ? Status::UNVERIFIED : Status::VERIFIED;
         $user->ev = $general->ev ? Status::UNVERIFIED : Status::VERIFIED;
@@ -177,8 +185,13 @@ class RegisterController extends Controller
         $basicInfo->user_id = $user->id;
         $basicInfo->gender = $data['gender'];
         $basicInfo->religion_id = $data['religion_id'];
-        $basicInfo->caste = $data['caste'];
+        $casteRecord = CasteInfo::find($data['caste_id']);
+        $basicInfo->caste = $casteRecord->name ?? null;
         $basicInfo->birth_date = $data['birth_date'];
+        // Save location for admin panel display
+        $basicInfo->country = $data['country'] ?? null;
+        $basicInfo->state   = $data['state']   ?? null;
+        $basicInfo->city    = $data['city']    ?? null;
         $basicInfo->save();
 
 
@@ -190,7 +203,7 @@ class RegisterController extends Controller
 
 
         //Login Log Create
-        $ip = getRealIP();
+        $ip = $data['ip_address'] ?? getRealIP();
         $exist = UserLogin::where('user_ip', $ip)->first();
         $userLogin = new UserLogin();
 
