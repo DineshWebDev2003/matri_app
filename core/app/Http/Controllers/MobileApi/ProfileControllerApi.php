@@ -51,6 +51,8 @@ class ProfileControllerApi extends Controller
                     'user' => [
                         'firstname' => $user->firstname,
                         'lastname'  => $user->lastname,
+                        'package_id' => $user->limitation->package_id ?? 4,
+                        'package_name' => $user->limitation->package->name ?? 'N/A',
                     ],
                     'options' => [
                         'religions' => $religions,

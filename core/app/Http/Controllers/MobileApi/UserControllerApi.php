@@ -105,6 +105,7 @@ class UserControllerApi extends BaseUserController
                 'sv'            => $user->sv,
                 'reg_step'      => $user->reg_step,
                 'looking_for'   => $user->looking_for == 1 ? 'Bride' : 'Bridegroom',
+                'package_id'    => $user->limitation->package_id ?? 4,
                 'plan_name'     => $user->limitation->package->name ?? 'FREE MATCH',
                 'plan_expired'  => $user->limitation->expire_date ?? 'N/A',
                 'stats'         => $stats,

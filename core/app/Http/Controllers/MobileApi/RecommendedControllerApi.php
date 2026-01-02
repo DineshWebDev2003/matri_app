@@ -78,6 +78,7 @@ END ASC", [strtolower($userCaste)]);
                     'profession'=> $u->basicInfo->profession ?? 'N/A',
                     'city'      => $city ?: 'N/A',
                     'state'     => $state ?: 'N/A',
+                    'package_id' => $u->limitation->package_id ?? 4,
                     'package_name' => $packageName,
                     'image'     => $u->image ? asset('assets/images/user/profile/' . $u->image) : asset('assets/images/default.png'),
                     'is_interested' => false, 
