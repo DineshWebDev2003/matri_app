@@ -91,6 +91,13 @@ Route::namespace('MobileApi')->name('mobile_api.')->group(function () {
     // Sanctum-protected routes
     Route::middleware('auth:sanctum')->group(function () {
 
+        // Support Ticket API Routes
+        Route::controller('TicketController')->prefix('support-tickets')->group(function () {
+            Route::get('/', 'index');      // List tickets
+            Route::post('/', 'store');     // Create ticket
+            Route::get('{id}', 'show');    // Ticket detail
+        });
+
         // Authorization
         Route::controller('AuthorizationControllerApi')->group(function () {
             Route::get('authorization', 'authorization')->name('authorization');
@@ -277,6 +284,10 @@ Route::get('locations/states', '\\App\\Http\\Controllers\\LocationController@sta
                     Route::get('my-interests', 'getInterestedProfiles')->name('interest.profiles');
                     Route::get('interest-requests', 'getInterestRequests')->name('interest.requests');
                     Route::get('interest-status/{userId}', 'checkInterestStatus')->name('interest.status');
+                    Route::controller('ShortListedProfileController')->group(function () {
+                        Route::post('add-to-short-list', 'add')->name('shortlist.add');
+                        Route::post('remove-from-short-list', 'remove')->name('shortlist.remove');
+                    });
                     Route::get('shortlisted-hearts', 'shortlistedHearts')->name('alias.shortlisted.hearts');
                 });
 
