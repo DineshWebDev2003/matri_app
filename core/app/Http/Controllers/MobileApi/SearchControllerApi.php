@@ -24,6 +24,7 @@ class SearchControllerApi extends Controller
         $location = trim($request->get('location', ''));
         $name     = trim($request->get('name', ''));
         $caste    = trim($request->get('caste', ''));
+        $religion = trim($request->get('religion', ''));
         $ageMin   = $request->get('age_min');
         $ageMax   = $request->get('age_max');
 
@@ -54,6 +55,15 @@ class SearchControllerApi extends Controller
 
         if ($caste !== '') {
             $builder->where('bi.caste', 'LIKE', "%$caste%");
+        }
+
+        if ($religion !== '') {
+            // if numeric assume religion_id, else match name
+            if (is_numeric($religion)) {
+                $builder->where('bi.religion_id', $religion);
+            } else {
+                $builder->where('bi.religion', 'LIKE', "%$religion%");
+            }
         }
 
         if ($ageMin !== null || $ageMax !== null) {
