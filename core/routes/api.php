@@ -122,6 +122,14 @@ Route::namespace('Api')->name('api.')->group(function () {
             });
         });
 
-        Route::get('logout', 'Auth\LoginController@logout');
+        Route::get('logout', 'Auth\\LoginController@logout');
+
+        // Razorpay mobile payment routes
+        Route::prefix('payments/razorpay')
+            ->controller(\App\Http\Controllers\Api\RazorpayController::class)
+            ->group(function () {
+                Route::post('order',  'create');  // POST /api/payments/razorpay/order
+                Route::post('verify', 'verify'); // POST /api/payments/razorpay/verify
+            });
     });
 });
