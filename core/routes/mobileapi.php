@@ -140,6 +140,7 @@ Route::namespace('MobileApi')->name('mobile_api.')->group(function () {
             // Profile routes available even if profile is NOT complete
             Route::controller('UserControllerApi')->group(function () {
                 Route::get('user/details', 'getProfileDetails')->name('user.details');
+                Route::get('user/details/{id}', 'getMember')->whereNumber('id')->name('user.details.id');
                 // Route::post('user/update', 'updateProfileDetails')->name('user.update'); // Deprecated
                 
                 // New Profile Update Endpoints

@@ -193,6 +193,134 @@ class UserControllerApi extends BaseUserController
     }
 
     /**
+     * Get details of a single member by ID (public, no auth required).
+     * GET /api/mobile/user/details/{id}
+     */
+    public function getMember($id)
+    {
+        try {
+            $user = \App\Models\User::with([
+                'basicInfo.religionInfo',
+                'limitation.package',
+                'galleries',
+                'physicalAttributes',
+                'family',
+                'educationInfo',
+                'careerInfo',
+                'partnerExpectation'
+            ])->find($id);
+
+            if (!$user) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => ['error' => ['Member not found']],
+                ], 404);
+            }
+
+            $galleryCount = $user->galleries->count();
+
+            $profile = [
+                'id'         => $user->id,
+                'profile_id' => 'NKLYNM' . $user->id,
+                'firstname'  => $user->firstname,
+                'lastname'   => $user->lastname,
+                'fullname'   => trim($user->firstname . ' ' . $user->lastname),
+                'email'      => $user->email,
+                'mobile'     => $user->mobile,
+                'image'      => $user->image ? asset('assets/images/user/' . $user->image) : asset('assets/images/default.png'),
+                'status'     => $user->status,
+                'ev'         => $user->ev,
+                'sv'         => $user->sv,
+                'reg_step'   => $user->reg_step,
+                'looking_for'=> $user->looking_for == 1 ? 'Bride' : 'Bridegroom',
+                'package_id' => $user->limitation->package_id ?? 4,
+                'plan_name'  => $user->limitation->package->name ?? 'FREE MATCH',
+                'plan_expired'=> $user->limitation->expire_date ?? 'N/A',
+                'stats'       => ['gallery_count' => $galleryCount],
+                'basic_info' => [
+                    'gender'         => $user->basicInfo->gender ?? null,
+                    'religion'       => $user->basicInfo->religionInfo->name ?? null,
+                    'religion_id'    => $user->basicInfo->religion_id ?? null,
+                    'caste'          => $user->basicInfo->caste ?? null,
+                    'birth_date'     => $user->basicInfo->birth_date ?? null,
+                    'marital_status' => $user->basicInfo->marital_status ?? null,
+                    'mother_tongue'  => $user->basicInfo->mother_tongue ?? null,
+                    'profession'     => $user->basicInfo->profession ?? null,
+                    'financial_condition'=> $user->basicInfo->financial_condition ?? null,
+                    'smoking_status' => $user->basicInfo->smoking_status ?? null,
+                    'drinking_status'=> $user->basicInfo->drinking_status ?? null,
+                    'language'       => $user->basicInfo->language ?? [],
+                ],
+                'residence_info'=> [
+                    'present_address'  => $user->basicInfo->present_address ?? null,
+                    'permanent_address'=> $user->basicInfo->permanent_address ?? null,
+                    'city'             => $user->basicInfo->city ?? null,
+                    'state'            => $user->basicInfo->state ?? null,
+                    'country'          => $user->basicInfo->country ?? null,
+                ],
+                'physical_info' => [
+                    'height'      => $user->physicalAttributes->height ?? null,
+                    'weight'      => $user->physicalAttributes->weight ?? null,
+                    'blood_group' => $user->physicalAttributes->blood_group ?? null,
+                    'eye_color'   => $user->physicalAttributes->eye_color ?? null,
+                    'hair_color'  => $user->physicalAttributes->hair_color ?? null,
+                    'complexion'  => $user->physicalAttributes->complexion ?? null,
+                    'disability'  => $user->physicalAttributes->disability ?? null,
+                ],
+                'family_info' => [
+                    'father_name'       => $user->family->father_name ?? null,
+                    'father_profession' => $user->family->father_profession ?? null,
+                    'father_contact'    => $user->family->father_contact ?? null,
+                    'mother_name'       => $user->family->mother_name ?? null,
+                    'mother_profession' => $user->family->mother_profession ?? null,
+                    'mother_contact'    => $user->family->mother_contact ?? null,
+                    'total_brother'     => $user->family->total_brother ?? 0,
+                    'total_sister'      => $user->family->total_sister ?? 0,
+                ],
+                'education_info' => $user->educationInfo,
+                'career_info'    => $user->careerInfo,
+                'partner_preference' => [
+                    'requirements'   => $user->partnerExpectation->general_requirement ?? null,
+                    'country'        => $user->partnerExpectation->country ?? null,
+                    'min_age'        => $user->partnerExpectation->min_age ?? null,
+                    'max_age'        => $user->partnerExpectation->max_age ?? null,
+                    'min_height'     => $user->partnerExpectation->min_height ?? null,
+                    'max_height'     => $user->partnerExpectation->max_height ?? null,
+                    'max_weight'     => $user->partnerExpectation->max_weight ?? null,
+                    'marital_status' => $user->partnerExpectation->marital_status ?? null,
+                    'religion'       => $user->partnerExpectation->religion ?? null,
+                    'complexion'     => $user->partnerExpectation->complexion ?? null,
+                    'smoking_status' => $user->partnerExpectation->smoking_status ?? null,
+                    'drinking_status'=> $user->partnerExpectation->drinking_status ?? null,
+                    'language'       => $user->partnerExpectation->language ?? [],
+                    'min_degree'     => $user->partnerExpectation->min_degree ?? null,
+                    'personality'    => $user->partnerExpectation->personality ?? null,
+                    'profession'     => $user->partnerExpectation->profession ?? null,
+                    'financial_condition'=> $user->partnerExpectation->financial_condition ?? null,
+                    'family_position'=> $user->partnerExpectation->family_position ?? null,
+                ],
+                'gallery' => $user->galleries->map(function($img){
+                    return [
+                        'id'  => $img->id,
+                        'url' => asset('assets/images/user/gallery/' . $img->image)
+                    ];
+                })
+            ];
+
+            return response()->json([
+                'status' => 'success',
+                'data'   => ['profile' => $profile],
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Mobile getMember failed: ' . $e->getMessage());
+            return response()->json([
+                'status'  => 'error',
+                'message' => ['error' => ['Failed to fetch member details']],
+            ], 500);
+        }
+    }
+
+    /**
      * Update user profile details.
      * POST /api/mobile/user/update
      */
