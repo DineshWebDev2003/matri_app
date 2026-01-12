@@ -333,6 +333,12 @@ Route::get('locations/states', '\\App\\Http\\Controllers\\LocationController@sta
                     Route::get('deposit/confirm', 'depositConfirm')->name('deposit.confirm');
                     Route::get('deposit/manual', 'manualDepositConfirm')->name('deposit.manual.confirm');
                     Route::post('deposit/manual', 'manualDepositUpdate')->name('deposit.manual.update');
+
+                    // PhonePe mobile payments
+                    Route::controller('PhonePeControllerApi')->group(function () {
+                        Route::post('phonepe/order', 'createOrder');
+                        Route::post('phonepe/verify', 'verifyPayment');
+                    });
                 });
             });
         });
