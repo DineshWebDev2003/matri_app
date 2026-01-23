@@ -135,6 +135,9 @@ Route::namespace('MobileApi')->name('mobile_api.')->group(function () {
                 Route::post('profile/education-info/skip', 'skipEducationInfo');
             });
 
+            // Basic profile welcome upload
+            Route::post('profile/welcome-basic', 'ProfileWelcomeController@store');
+
             Route::post('user-data-submit', 'UserControllerApi@userDataSubmit')->name('data.submit');
             
             // Profile routes available even if profile is NOT complete

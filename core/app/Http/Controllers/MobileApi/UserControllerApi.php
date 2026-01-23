@@ -84,6 +84,24 @@ class UserControllerApi extends BaseUserController
                 'partnerExpectation'
             ]);
 
+            // derive height values when max_height is not stored separately
+            $pe = $user->partnerExpectation;
+            if($pe && empty($pe->max_height) && !empty($pe->height_range)){
+                [$minH,$maxH] = array_pad(explode('-', $pe->height_range),2,null);
+                if(!$pe->min_height) $pe->min_height = $minH;
+                $pe->max_height = $maxH;
+            }
+
+            // derive height values when max_height is not stored separately
+            $pe = $user->partnerExpectation;
+            if($pe){
+                if(empty($pe->max_height) && !empty($pe->height_range)){
+                    [$minH,$maxH] = array_pad(explode('-', $pe->height_range),2,null);
+                    if(!$pe->min_height) $pe->min_height = $minH;
+                    $pe->max_height = $maxH;
+                }
+            }
+
             $stats = [
                 'interest_left'   => (int) ($user->limitation->interest_express_limit ?? 0),
                 'contact_view'    => (int) ($user->limitation->contact_view_limit ?? 0),
@@ -209,6 +227,14 @@ class UserControllerApi extends BaseUserController
                 'careerInfo',
                 'partnerExpectation'
             ])->find($id);
+
+            // derive heights from stored range
+            $pe = $user->partnerExpectation;
+            if($pe && empty($pe->max_height) && !empty($pe->height_range)){
+                [$minH,$maxH] = array_pad(explode('-', $pe->height_range),2,null);
+                if(!$pe->min_height) $pe->min_height = $minH;
+                $pe->max_height = $maxH;
+            }
 
             if (!$user) {
                 return response()->json([

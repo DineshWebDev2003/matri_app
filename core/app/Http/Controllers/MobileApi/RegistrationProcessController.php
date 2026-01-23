@@ -259,6 +259,10 @@ class RegistrationProcessController extends Controller
         $partnerExpectation->min_age = $request->min_age;
         $partnerExpectation->max_age = $request->max_age;
         $partnerExpectation->min_height = $request->min_height;
+        // store both heights as string range because table lacks max_height column
+        if($request->min_height && $request->max_height){
+            $partnerExpectation->height_range = $request->min_height.'-'.$request->max_height;
+        }
         $partnerExpectation->max_weight = $request->max_weight; // Note: Image didn't show Max Weight, but good to keep if UI sends it
         $partnerExpectation->marital_status = $request->marital_status;
         $partnerExpectation->religion = $request->religion;
