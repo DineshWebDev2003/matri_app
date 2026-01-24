@@ -29,7 +29,7 @@ class PaymentControllerApi extends BasePaymentController
         // amount in paise (INR)
         $amountPaise = intval($plan->price * 100);
 
-        $api = new Api(env('RAZORPAY_KEY_ID'), env('RAZORPAY_KEY_SECRET'));
+        $api = new Api(env('RAZORPAY_KEY'), env('RAZORPAY_SECRET'));
         $order = $api->order->create([
             'receipt'         => Str::uuid(),
             'amount'          => $amountPaise,
@@ -70,7 +70,7 @@ class PaymentControllerApi extends BasePaymentController
             'plan_id'             => 'required|integer',
         ]);
 
-        $generatedSignature = hash_hmac('sha256', $request->razorpay_order_id.'|'.$request->razorpay_payment_id, env('RAZORPAY_KEY_SECRET'));
+        $generatedSignature = hash_hmac('sha256', $request->razorpay_order_id.'|'.$request->razorpay_payment_id, env('RAZORPAY_SECRET'));
         if ($generatedSignature !== $request->razorpay_signature) {
             return response()->json(['status'=>'error','message'=>'Signature verification failed'], 400);
         }

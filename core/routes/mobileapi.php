@@ -89,7 +89,8 @@ Route::namespace('MobileApi')->name('mobile_api.')->group(function () {
     });
 
     // Sanctum-protected routes
-    Route::middleware('auth:sanctum')->group(function () {
+    // Bypass profile-complete guard for mobile app routes
+    Route::middleware('auth:sanctum')->withoutMiddleware('registration.complete')->group(function () {
 
         // Support Ticket API Routes
         Route::controller('TicketController')->prefix('support-tickets')->group(function () {
