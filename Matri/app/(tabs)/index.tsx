@@ -361,8 +361,8 @@ export default function HomeScreen() {
           const transformedProfiles = limitedProfiles.map((profile: any) => {
             const userGender = profile?.gender?.toLowerCase();
             const defaultImage = userGender === 'female' 
-              ? require('../../assets/images/default-female.jpg')
-              : require('../../assets/images/default-male.jpg');
+              ? require('../../assets/images/female_avatar.webp')
+              : require('../../assets/images/male_avatar.webp');
             
             // Get profile image URL - API already returns full URL from formatProfileResponse
             let profileImage = null;

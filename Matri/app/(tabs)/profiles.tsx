@@ -63,8 +63,8 @@ const ProfileCard = ({ item, onPress, onHeartPress, interestingProfiles, isHoriz
   // Get gender and set default image
   const userGender = item?.gender?.toLowerCase();
   const defaultImage = userGender === 'female' 
-    ? require('../../assets/images/default-female.jpg')
-    : require('../../assets/images/default-male.jpg');
+    ? require('../../assets/images/female_avatar.webp')
+    : require('../../assets/images/male_avatar.webp');
   
   // Get profile image from API if available
   // API returns full URLs from formatProfileResponse, use them directly

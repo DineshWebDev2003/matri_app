@@ -121,8 +121,8 @@ export default function InterestSentScreen() {
             renderItem={({ item }) => {
               const profileImage = getImageUrl(item.image);
               const defaultImage = item.gender?.toLowerCase() === 'female'
-                ? require('../assets/images/default-female.jpg')
-                : require('../assets/images/default-male.jpg');
+                ? require('../assets/images/female_avatar.webp')
+                : require('../assets/images/male_avatar.webp');
 
               return (
                 <TouchableOpacity 

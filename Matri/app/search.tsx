@@ -140,7 +140,7 @@ export default function SearchScreen() {
         <Image
           source={{ uri: imageUrl }}
           style={styles.profileImage}
-          defaultSource={require('../assets/images/default-male.jpg')}
+          defaultSource={require('../assets/images/male_avatar.webp')}
         />
         <View style={styles.profileInfo}>
           <Text style={[styles.profileName, themeStyles.text]}>

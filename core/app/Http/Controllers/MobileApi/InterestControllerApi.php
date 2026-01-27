@@ -314,6 +314,69 @@ class InterestControllerApi extends Controller
     }
 
     /**
+     * Accept incoming interest request
+     * POST /api/mobile/accept-interest/{userId}
+     */
+    public function acceptInterest($userId)
+    {
+        try {
+            $currentUserId = Auth::id();
+
+            // Find the express interest where I am the target and the other user expressed interest
+            $interest = ExpressInterest::where('user_id', $currentUserId)
+                ->where('interested_by', $userId)
+                ->first();
+
+            if (!$interest) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => ['error' => ['No pending interest found from this user']],
+                ], 404);
+            }
+
+            // Update status to accepted (1)
+            $interest->status = 1;
+            $interest->save();
+
+            // Add both users to each other's shortlist
+            ShortListedProfile::firstOrCreate([
+                'user_id'   => $currentUserId, // receiver shortlists sender
+                'profile_id' => $userId,
+            ]);
+            ShortListedProfile::firstOrCreate([
+                'user_id'   => $userId, // sender shortlists receiver
+                'profile_id' => $currentUserId,
+            ]);
+
+            // Also update/insert into user_interests table
+            UserInterest::updateOrCreate(
+                [
+                    'user_id'        => $currentUserId,
+                    'interesting_id' => $userId,
+                ],
+                [
+                    'status' => 1,
+                ]
+            );
+
+            return response()->json([
+                'status'  => 'success',
+                'message' => ['success' => ['Interest accepted successfully']],
+                'data'    => [
+                    'user_id' => $userId,
+                    'status'  => 'accepted',
+                ],
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Accept interest failed: '.$e->getMessage());
+            return response()->json([
+                'status'  => 'error',
+                'message' => ['error' => ['Failed to accept interest: '.$e->getMessage()]],
+            ], 500);
+        }
+    }
+
+    /**
      * Check if user has expressed interest in a specific profile
      */
     public function checkInterestStatus($userId)

@@ -415,8 +415,8 @@ export default function ProfileDetailScreen() {
     const profileImagePrimary = profile?.image || 'https://via.placeholder.com/400x600';
   const genderLower = (profile?.gender || profile?.looking_for_gender || '').toLowerCase();
   const profileImageFallback = genderLower === 'female'
-    ? require('../../assets/images/default-female.jpg')
-    : require('../../assets/images/default-male.jpg');
+    ? require('../../assets/images/female_avatar.webp')
+    : require('../../assets/images/male_avatar.webp');
   console.log('👤 Profile Detail Screen - Main Image:', {
     profileId: profile?.id,
     profileName: profile?.name,

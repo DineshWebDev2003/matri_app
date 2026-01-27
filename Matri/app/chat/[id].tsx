@@ -683,7 +683,7 @@ export default function ChatScreen() {
             {!isMyMessage && (
               <FallbackImage 
               source={{ uri: getAvatarSource(item.senderImage, isMyMessage) }} 
-              fallbackSource={otherUserGender?.toLowerCase()==='female' ? require('../../assets/images/default-female.jpg') : require('../../assets/images/default-male.jpg')} 
+              fallbackSource={otherUserGender?.toLowerCase()==='female' ? require('../../assets/images/female_avatar.webp') : require('../../assets/images/male_avatar.webp')} 
               style={styles.messageAvatar} />
             )}
             <TouchableOpacity onPress={() => { setSelectedImage(item.uri); setModalVisible(true); }}>
@@ -699,7 +699,7 @@ export default function ChatScreen() {
             {!isMyMessage && (
               <FallbackImage 
               source={{ uri: getAvatarSource(item.senderImage, isMyMessage) }} 
-              fallbackSource={otherUserGender?.toLowerCase()==='female' ? require('../../assets/images/default-female.jpg') : require('../../assets/images/default-male.jpg')} 
+              fallbackSource={otherUserGender?.toLowerCase()==='female' ? require('../../assets/images/female_avatar.webp') : require('../../assets/images/male_avatar.webp')} 
               style={styles.messageAvatar} />
             )}
             <View style={[styles.messageBubble, isMyMessage ? styles.myBubble : styles.otherBubble]}>
@@ -716,7 +716,7 @@ export default function ChatScreen() {
             {!isMyMessage && (
               <FallbackImage 
               source={{ uri: getAvatarSource(item.senderImage, isMyMessage) }} 
-              fallbackSource={otherUserGender?.toLowerCase()==='female' ? require('../../assets/images/default-female.jpg') : require('../../assets/images/default-male.jpg')} 
+              fallbackSource={otherUserGender?.toLowerCase()==='female' ? require('../../assets/images/female_avatar.webp') : require('../../assets/images/male_avatar.webp')} 
               style={styles.messageAvatar} />
             )}
             <View style={[styles.messageBubble, isMyMessage ? styles.myBubble : styles.otherBubble]}>
@@ -745,8 +745,8 @@ export default function ChatScreen() {
               <FallbackImage
                 source={{ uri: chatImage }}
                 fallbackSource={otherUserGender?.toLowerCase() === 'female'
-                  ? require('../../assets/images/default-female.jpg')
-                  : require('../../assets/images/default-male.jpg')}
+                  ? require('../../assets/images/female_avatar.webp')
+                  : require('../../assets/images/male_avatar.webp')}
                 style={styles.userInfoAvatar}
               />
               <View style={{ flex: 1, marginLeft: 12 }}>
@@ -780,8 +780,8 @@ export default function ChatScreen() {
             <FallbackImage
               source={{ uri: chatImage }}
               fallbackSource={otherUserGender?.toLowerCase() === 'female'
-                ? require('../../assets/images/default-female.jpg')
-                : require('../../assets/images/default-male.jpg')}
+                ? require('../../assets/images/female_avatar.webp')
+                : require('../../assets/images/male_avatar.webp')}
               style={styles.userInfoAvatar}
             />
             <View style={{ flex: 1, marginLeft: 12 }}>

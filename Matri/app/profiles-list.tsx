@@ -246,8 +246,8 @@ export default function ProfilesListScreen() {
                   (item?.image ? `${imageBaseUrl}/${item?.image?.replace(/[}\])]$/g, '')}` : null);
                 const userGender = item?.gender?.toLowerCase();
                 const defaultImage = userGender === 'female' 
-                  ? require('../assets/images/default-female.jpg')
-                  : require('../assets/images/default-male.jpg');
+                  ? require('../assets/images/female_avatar.webp')
+                  : require('../assets/images/male_avatar.webp');
                 
                 return profileImage ? (
                   <Image 

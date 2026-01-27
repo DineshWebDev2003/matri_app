@@ -66,8 +66,8 @@ export default function AllMatchesScreen() {
     // Return gender-wise default image
     const userGender = profile?.gender?.toLowerCase();
     return userGender === 'female'
-      ? require('../assets/images/default-female.jpg')
-      : require('../assets/images/default-male.jpg');
+      ? require('../assets/images/female_avatar.webp')
+      : require('../assets/images/male_avatar.webp');
   };
 
   const calculateAge = (dateString: string) => {
@@ -103,7 +103,7 @@ export default function AllMatchesScreen() {
         <Image
           source={typeof profileImage === 'string' ? { uri: profileImage } : profileImage}
           style={styles.profileImage}
-          defaultSource={require('../assets/images/default-male.jpg')}
+          defaultSource={require('../assets/images/male_avatar.webp')}
         />
 
         {/* Profile Info */}

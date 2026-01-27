@@ -226,8 +226,8 @@ export default function ProfileDetailScreen() {
     // Return gender-wise default image
     const userGender = profile?.gender?.toLowerCase();
     return userGender === 'female' 
-      ? require('../assets/images/default-female.jpg')
-      : require('../assets/images/default-male.jpg');
+      ? require('../assets/images/female_avatar.webp')
+      : require('../assets/images/male_avatar.webp');
   };
 
   const profileImage = getProfileImage();

@@ -117,7 +117,7 @@ class UserControllerApi extends BaseUserController
                 'fullname'      => $user->firstname . ' ' . $user->lastname,
                 'email'         => $user->email,
                 'mobile'        => $user->mobile,
-                'image'         => $user->image ? asset('assets/images/user/' . $user->image) : asset('assets/images/default.png'),
+                'image'         => $user->image ? asset('assets/images/user/profile/' . $user->image) : asset('assets/images/default.png'),
                 'status'        => $user->status, // 0: Banned, 1: Active, 2: Unapproved
                 'ev'            => $user->ev,
                 'sv'            => $user->sv,
@@ -253,7 +253,7 @@ class UserControllerApi extends BaseUserController
                 'fullname'   => trim($user->firstname . ' ' . $user->lastname),
                 'email'      => $user->email,
                 'mobile'     => $user->mobile,
-                'image'      => $user->image ? asset('assets/images/user/' . $user->image) : asset('assets/images/default.png'),
+                'image'      => $user->image ? asset('assets/images/user/profile/' . $user->image) : asset('assets/images/default.png'),
                 'status'     => $user->status,
                 'ev'         => $user->ev,
                 'sv'         => $user->sv,

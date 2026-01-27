@@ -75,8 +75,8 @@ export default function ProfilesScreen() {
     // Return gender-wise default image
     const userGender = profile?.gender?.toLowerCase();
     return userGender === 'female'
-      ? require('../assets/images/default-female.jpg')
-      : require('../assets/images/default-male.jpg');
+      ? require('../assets/images/female_avatar.webp')
+      : require('../assets/images/meae_avavar.w.bb');
   };
 
   const calculateAge = (dateString: string) => {
@@ -130,7 +130,7 @@ export default function ProfilesScreen() {
         <Image
           source={typeof profileImage === 'string' ? { uri: profileImage } : profileImage}
           style={styles.cardImage}
-          defaultSource={require('../assets/images/default-male.jpg')}
+          defaultSource={require('../assets/images/meae_avavar.w.bb')}
         />
 
         {/* Match Percentage Badge */}

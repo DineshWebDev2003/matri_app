@@ -289,11 +289,18 @@ Route::get('locations/states', '\\App\\Http\\Controllers\\LocationController@sta
                     Route::get('my-interests', 'getInterestedProfiles')->name('interest.profiles');
                     Route::get('interest-requests', 'getInterestRequests')->name('interest.requests');
                     Route::get('interest-status/{userId}', 'checkInterestStatus')->name('interest.status');
+                    Route::post('accept-interest/{userId}', 'acceptInterest')->name('interest.accept');
                     Route::controller('ShortListedProfileController')->group(function () {
                         Route::post('add-to-short-list', 'add')->name('shortlist.add');
                         Route::post('remove-from-short-list', 'remove')->name('shortlist.remove');
                     });
                     Route::get('shortlisted-hearts', 'shortlistedHearts')->name('alias.shortlisted.hearts');
+                });
+
+                // Razorpay payment routes (mobile API)
+                Route::controller('RazorpayController')->group(function () {
+                    Route::post('razorpay/order', 'createOrder');
+                    Route::post('razorpay/verify', 'verifyPayment');
                 });
 
                 // Alias routes
