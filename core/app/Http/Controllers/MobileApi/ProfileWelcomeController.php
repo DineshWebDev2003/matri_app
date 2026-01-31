@@ -45,8 +45,22 @@ class ProfileWelcomeController extends Controller
 
             // Handle optional profile image (store on basic_infos)
             if ($request->hasFile('profile_image')) {
-                $path = $request->file('profile_image')->store('profile_images', 'public');
-                $user->image = $path;
+                $file = $request->file('profile_image');
+
+                // Destination inside project root: matri_app/assets/images/user/profile
+                $destPath = base_path('matri_app/assets/images/user/profile');
+                if (!is_dir($destPath)) {
+                    mkdir($destPath, 0755, true);
+                }
+
+                // Generate unique filename to avoid collisions
+                $filename = uniqid() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+
+                $file->move($destPath, $filename);
+
+                // Save relative path so frontend can construct full URL easily
+                $user->image = 'assets/images/user/profile/' . $filename;
+                $user->save(); // ensure path is persisted
             }
             $basic->save();
             // mark user touched
