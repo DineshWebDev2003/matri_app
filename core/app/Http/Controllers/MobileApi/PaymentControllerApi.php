@@ -28,10 +28,10 @@ class PaymentControllerApi extends BasePaymentController
             ]);
 
             $request->validate([
-                'plan_id' => 'required|integer',
+                'package_id' => 'required|integer',
             ]);
             $user = auth()->user();
-            $plan = Package::findOrFail($request->plan_id);
+            $plan = Package::findOrFail($request->package_id);
 
             // amount in paise (INR)
             $amountPaise = intval($plan->price * 100);
@@ -92,7 +92,7 @@ class PaymentControllerApi extends BasePaymentController
                 'payment_capture' => 1,
                 'notes'           => [
                     'user_id' => (string)$user->id,
-                    'plan_id' => (string)$plan->id,
+                    'package_id' => (string)$plan->id,
                 ],
             ]);
 
@@ -185,7 +185,7 @@ class PaymentControllerApi extends BasePaymentController
                 'razorpay_order_id'   => 'required',
                 'razorpay_payment_id' => 'required',
                 'razorpay_signature'  => 'required',
-                'plan_id'             => 'required|integer',
+                'package_id'             => 'required|integer',
             ]);
 
             $gateway = Gateway::where('alias', 'Razorpay')->orWhere('code', 110)->first();
@@ -219,11 +219,25 @@ class PaymentControllerApi extends BasePaymentController
                 return response()->json(['status'=>'error','message'=>'Signature verification failed'], 400);
             }
 
-            // TODO: mark payment as complete, upgrade user's plan
-            // For simplicity: update user package_id to plan_id
-            $user = auth()->user();
-            $user->package_id = $request->plan_id;
-            $user->save();
+            // Mark payment complete + store deposit record
+            \DB::transaction(function() use ($request) {
+                $user = auth()->user();
+                // upgrade plan
+                $user->package_id = $request->package_id;
+                $user->save();
+
+                // create deposit/payment row so it appears in admin
+                Deposit::create([
+                    'user_id'      => $user->id,
+                    'gateway_id'   => 110, // Razorpay code
+                    'amount'       => GatewayCurrency::where('gateway_id',110)->first()->min_amount ?? 0,
+                    'currency'     => 'INR',
+                    'trx'          => $request->razorpay_payment_id,
+                    'status'       => 1,
+                    'charge'       => 0,
+                    'rate'         => 1,
+                ]);
+            });
 
             \Log::info('Payment verified and plan activated', [
                 'user_id' => $user->id,
